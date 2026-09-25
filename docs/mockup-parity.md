@@ -12,6 +12,6 @@ Il riferimento HTML è una simulazione locale. Questa tabella evita di confonder
 | QR personale, Scan / Show, condivisione link e richiesta di amicizia | Vista a scorrimento, condivisione nativa e scansione; la richiesta è simulata | Token per account, accettazione, scadenza, revoca e limiti d'uso |
 | Guardaroba | Anteprima vettoriale, colori, occhiali, saluto | Asset finali, varianti di modello, rotazione e salvataggio account |
 | Benvenuto, impostazioni, stati brevi e visibilità | Solo nel riferimento HTML | Percorsi Flutter e backend |
-| Account email/password, Google e dichiarazione 18+ | Assenti | Supabase Auth e regole lato server |
+| Account email/password, Google e dichiarazione 18+ | Implementati dietro configurazione Supabase; senza configurazione resta la demo | Verificare con due account reali i flussi Auth e le regole lato server prima di chiudere M2 |
 
 I “piani personali” del precedente prototipo sono stati rimossi: il prodotto comprende eventi pubblici ed eventi privati su invito. Il QR dimostrativo usa l'origine corrente dell'anteprima; un link generato su `127.0.0.1` non è utilizzabile da un altro dispositivo. Nessuna funzione dimostrativa assegna accesso a dati privati reali.

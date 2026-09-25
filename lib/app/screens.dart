@@ -676,7 +676,10 @@ class FriendsScreen extends StatelessWidget {
 }
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, this.displayName, this.onAccountSettings});
+
+  final String? displayName;
+  final VoidCallback? onAccountSettings;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -742,7 +745,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Eyebrow('Domi'),
+                  Eyebrow(widget.displayName ?? 'Domi'),
                   const SizedBox(height: 3),
                   Text(
                     'Il tuo altro io.',
@@ -753,8 +756,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             IconButton(
-              onPressed: null,
-              tooltip: 'Impostazioni disponibili più avanti',
+              onPressed: widget.onAccountSettings,
+              tooltip: widget.onAccountSettings == null
+                  ? 'Impostazioni disponibili più avanti'
+                  : 'Modifica account',
               icon: const Icon(Icons.settings_outlined),
             ),
           ],
