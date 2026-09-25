@@ -17,3 +17,23 @@ jobs:
           persist-credentials: false
       - name: Verifica riferimento grafico
         run: python3 scripts/check.py
+
+  flutter:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.47.5'
+          channel: stable
+          cache: true
+      - name: Dipendenze Flutter
+        run: flutter pub get
+      - name: Analisi Dart
+        run: flutter analyze
+      - name: Test Flutter
+        run: flutter test
+      - name: Compilazione web
+        run: flutter build web

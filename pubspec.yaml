@@ -1,0 +1,29 @@
+name: fuori
+description: "Fuori: eventi pubblici e privati tra amici."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  mobile_scanner: ^7.4.2
+  qr_flutter: ^4.1.0
+  share_plus: ^13.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope.ttf
+    - family: DM Sans
+      fonts:
+        - asset: assets/fonts/DM-Sans.ttf
