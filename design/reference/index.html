@@ -129,6 +129,23 @@
 #fuori-mobile .invite-share{padding:17px}
 #fuori-mobile .invite-link{width:100%;height:46px;padding:0 12px;border:1px solid var(--line);border-radius:13px;background:var(--paper);font-size:12px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;direction:ltr;text-align:left;margin:0 0 9px}
 #fuori-mobile .invite-share .create{margin:0;min-height:50px}
+#fuori-mobile .event-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;background:var(--wash);border-radius:16px;margin:18px 0 0}
+#fuori-mobile .event-filters button{min-height:40px;border-radius:12px;font-size:12px;white-space:nowrap}
+#fuori-mobile .event-filters button[aria-pressed=true]{background:var(--surface);font-weight:700}
+#fuori-mobile .invite-view{min-height:650px;display:flex;flex-direction:column}
+#fuori-mobile .invite-toolbar{display:flex;align-items:center;gap:8px;margin:-3px -9px 18px}
+#fuori-mobile .invite-toolbar strong{flex:1;text-align:center;font-size:13px}
+#fuori-mobile .invite-toolbar .share-top{color:var(--accent);font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;min-height:44px}
+#fuori-mobile .invite-toolbar .share-top svg{width:17px;height:17px}
+#fuori-mobile .invite-mode-body{flex:1;padding-top:12px}
+#fuori-mobile .invite-mode-body h1{font-size:34px;margin:6px 0 6px}
+#fuori-mobile .invite-mode-body>p:last-of-type{font-size:13px;color:var(--muted)}
+#fuori-mobile .invite-mode-body .qr-card,#fuori-mobile .invite-mode-body .scanner-section{margin-top:26px}
+#fuori-mobile .invite-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px;background:var(--wash);border-radius:28px;margin-top:20px}
+#fuori-mobile .invite-switch button{min-height:50px;border-radius:25px;display:flex;justify-content:center;align-items:center;gap:8px;font-weight:700}
+#fuori-mobile .invite-switch button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}
+#fuori-mobile .invite-note{text-align:center;font-size:11px;color:var(--muted);padding:12px 0}
+#fuori-mobile .app:has(.invite-view) .top,#fuori-mobile .app:has(.invite-view) .bottom{display:none}
 @media(max-width:360px){#fuori-mobile .invite-section{padding:15px}#fuori-mobile .qr-shell{width:210px}#fuori-mobile .scanner-viewport{height:160px}}
 </style>
 <div class="app">
@@ -137,7 +154,7 @@
   <div class="toast" role="status" hidden></div>
   <nav class="bottom" aria-label="Navigazione principale">
     <button data-nav="home" class="cursor-interaction" aria-current="page"><i data-lucide="house" aria-hidden="true"></i>In giro</button>
-    <button data-nav="plans" class="cursor-interaction"><i data-lucide="calendar-days" aria-hidden="true"></i>Piani</button>
+    <button data-nav="plans" class="cursor-interaction"><i data-lucide="calendar-days" aria-hidden="true"></i>Eventi</button>
     <button data-nav="friends" class="cursor-interaction"><i data-lucide="users" aria-hidden="true"></i>Amici</button>
     <button data-nav="avatar" class="cursor-interaction"><i data-lucide="shirt" aria-hidden="true"></i>Il mio io</button>
   </nav>
@@ -151,13 +168,14 @@
   const icon=n=>`<i data-lucide="${n}" aria-hidden="true"></i>`;
   const button=(text,action,kind='create')=>`<button class="${kind} cursor-interaction" data-action="${action}" type="button">${text}</button>`;
   const inviteParams=new URLSearchParams(window.location.search), initialInvite=inviteParams.get('invite')==='fuori-demo'?{name:(inviteParams.get('from')||'').slice(0,30)}:null;
-  const state={screen:initialInvite?'request':'home',day:'tomorrow',visible:true,plans:[],requested:false,category:'top',outfit:{...FuoriHabbo.defaults},draft:null,event:'coguaro',direction:2,name:'Domi',incomingInvite:initialInvite,onboarding:false,eventDraft:{title:'Una sera da me',place:'Casa mia · Torino',date:'2026-09-26',time:'20:30',visibility:'private',cover:'home'},createdEvents:[],privateResponses:{},formError:''};
+  const state={screen:initialInvite?'request':'home',day:'tomorrow',eventFilter:'all',inviteMode:'show',visible:true,requested:false,category:'top',outfit:{...FuoriHabbo.defaults},draft:null,event:'coguaro',direction:2,name:'Domi',incomingInvite:initialInvite,onboarding:false,eventDraft:{title:'Una sera da me',place:'Casa mia · Torino',date:'2026-09-26',time:'20:30',visibility:'private',cover:'home'},createdEvents:[],privateResponses:{},formError:''};
   const design={tone:'coral',softness:28};
   const events={coguaro:{title:'Ci vediamo al Coguaro',place:'Coguaro',date:'Giovedì 24 settembre',short:'GIO 24 SET',time:'21:00 – 01:00',total:24,friends:['Vale','Fra','Leo']},concerto:{title:'Sotto lo stesso cielo',place:'Piazza Castello, Torino',date:'Venerdì 25 settembre',short:'VEN 25 SET',time:'20:30 – 00:30',total:48,friends:['Fra','Vale']},aperitivo:{title:'Aperitivo senza fretta',place:'San Salvario, Torino',date:'Mercoledì 23 settembre',short:'MER 23 SET',time:'19:00 – 22:00',total:12,friends:['Vale','Fra','Leo']},sabato:{title:'Sabato in centro',place:'Piazza Vittorio, Torino',date:'Sabato 26 settembre',short:'SAB 26 SET',time:'18:30 – 22:30',total:16,friends:['Vale','Fra','Leo']}};
   Object.assign(events,FuoriPlanFeed.extraEvents);
   const people={Vale:{class:'',status:'Arrivo alle 21:30'},Fra:{class:'fra',status:'Ci vediamo all’ingresso'},Leo:{class:'leo',status:'Ci sono dalle 21'}};
   const rsvps={coguaro:false,concerto:false,aperitivo:false,sabato:false};
   for(const id of Object.keys(FuoriPlanFeed.extraEvents))rsvps[id]=false;
+  const maybeRsvps={};
   const portrait=name=>`<div class="portrait ${people[name]?.class||''}" aria-hidden="true"><habbo-avatar head-only data-portrait="${esc(name)}" label="${esc(name)}"></habbo-avatar></div>`;
   const person=(name,detail)=>`<div class="person-row">${portrait(name)}<div><h3>${esc(name)}</h3><small>${esc(detail||people[name].status)}</small></div></div>`;
   const back=(label,target='home')=>`<div class="back-row">${button(icon('arrow-left'),'back:'+target,'icon-button')}<p>${label}</p><span style="width:44px"></span></div>`;
@@ -165,19 +183,20 @@
   const poster=large=>`<div class="poster ${large?'large':''}" aria-hidden="true"><small>TORINO / LIVE SESSIONS</small><span>SOTTO<br>LO STESSO<br>CIELO.</span><small>25 SETTEMBRE · DALLE 20:30</small></div>`;
   const storageKey='fuori-reference-state-v1';
   function persist(){
-    const snapshot={version:1,screen:state.screen,day:state.day,outfit:state.outfit,direction:state.direction,joined:rsvps,plans:state.plans,requested:state.requested,visible:state.visible,name:state.name,createdEvents:state.createdEvents,privateResponses:state.privateResponses};
+    const snapshot={version:1,screen:state.screen,day:state.day,eventFilter:state.eventFilter,outfit:state.outfit,direction:state.direction,joined:rsvps,maybe:maybeRsvps,requested:state.requested,visible:state.visible,name:state.name,createdEvents:state.createdEvents,privateResponses:state.privateResponses};
     try{localStorage.setItem(storageKey,JSON.stringify(snapshot));}catch{}
   }
   function restore(saved){
     if(saved?.version!==1)return;
     if(['home','plans','friends','avatar'].includes(saved.screen))state.screen=saved.screen;
     if(['today','tomorrow','weekend'].includes(saved.day))state.day=saved.day;
+    if(['all','attending','maybe'].includes(saved.eventFilter))state.eventFilter=saved.eventFilter;
     state.direction=FuoriHabbo.direction(saved.direction??2);
     const o=saved.outfit||{};
     for(const key of ['top','bottom','skin','hair'])if(/^#[0-9a-f]{6}$/i.test(o[key]))state.outfit[key]=o[key];
     for(const [key,values] of Object.entries({accessory:['cap','glasses','none','phones'],hairstyle:['side','bob','spiky'],garment:['jacket','hoodie','tee'],shoes:['sneakers','slippers','runners','boots'],pose:['idle','wave']}))if(values.includes(o[key]))state.outfit[key]=o[key];
     state.outfit=FuoriHabbo.normalize(state.outfit);
-    state.plans=Array.isArray(saved.plans)?saved.plans.filter(x=>x&&typeof x.place==='string'&&typeof x.date==='string').slice(0,8):[];state.requested=!!saved.requested;state.visible=saved.visible!==false;if(typeof saved.name==='string')state.name=saved.name.slice(0,30);for(const id of Object.keys(rsvps))rsvps[id]=!!saved.joined?.[id];if(Array.isArray(saved.createdEvents))state.createdEvents=saved.createdEvents.filter(x=>x&&typeof x.title==='string'&&typeof x.place==='string').slice(0,8);if(saved.privateResponses&&typeof saved.privateResponses==='object')state.privateResponses=saved.privateResponses;
+    state.requested=!!saved.requested;state.visible=saved.visible!==false;if(typeof saved.name==='string')state.name=saved.name.slice(0,30);for(const id of Object.keys(rsvps)){rsvps[id]=!!saved.joined?.[id];maybeRsvps[id]=!!saved.maybe?.[id];}if(Array.isArray(saved.createdEvents))state.createdEvents=saved.createdEvents.filter(x=>x&&typeof x.title==='string'&&typeof x.place==='string').slice(0,8);if(saved.privateResponses&&typeof saved.privateResponses==='object')state.privateResponses=saved.privateResponses;
   }
   try{restore(JSON.parse(localStorage.getItem(storageKey)||'null'));}catch{}
   if(initialInvite){state.screen='request';state.incomingInvite=initialInvite;}
@@ -239,11 +258,12 @@
   async function shareInvite(){
     const url=inviteUrl(),shareData={title:'Unisciti alla mia cerchia su Fuori',text:`Ciao! Ti invito su Fuori. Ci troviamo qui: ${url}`,url};
     if(navigator.share){try{await navigator.share(shareData);return;}catch(error){if(error.name==='AbortError')return;}}
-    try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);}else{const field=page.querySelector('#invite-link');field.focus();field.select();if(!document.execCommand('copy'))throw new Error('copy');field.setSelectionRange(0,0);}notice('Link copiato. Ora puoi incollarlo in chat.');}
-    catch{const field=page.querySelector('#invite-link');field?.focus();field?.select();notice('Tieni premuto sul link qui sopra e scegli Copia.');}
+    try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);}else{const field=page.querySelector('#invite-link');field.hidden=false;field.focus();field.select();if(!document.execCommand('copy'))throw new Error('copy');field.hidden=true;}notice('Link copiato. Ora puoi incollarlo in chat.');}
+    catch{const field=page.querySelector('#invite-link');if(field){field.hidden=false;field.focus();field.select();}notice('Condivisione non disponibile: copia il link selezionato.');}
   }
   function notice(text){toast.textContent=text;toast.hidden=false;}
-  function go(screen){if(screen!=='invite')stopQrScanner();if(screen==='home')state.onboarding=false;if(state.screen==='avatar'&&screen!=='avatar')state.draft=null;state.screen=screen;toast.hidden=true;render();page.scrollTop=0;persist();}
+  function go(screen){if(screen!=='invite')stopQrScanner();if(screen==='invite'&&state.screen!=='invite')state.inviteMode='show';if(screen==='home')state.onboarding=false;if(state.screen==='avatar'&&screen!=='avatar')state.draft=null;state.screen=screen;toast.hidden=true;render();page.scrollTop=0;persist();}
+  function setInviteMode(mode){if(!['scan','show'].includes(mode)||state.inviteMode===mode)return;stopQrScanner();state.inviteMode=mode;render();page.scrollTop=0;}
   function home(){
     const featured=state.day==='today'?'aperitivo':state.day==='weekend'?'sabato':'coguaro';
     const event=events[featured],choices=[['today','Oggi'],['tomorrow','Domani'],['weekend','Weekend']];
@@ -251,52 +271,40 @@
     const count=FuoriPlanFeed.itemsFor(state.day,state).length;
     return '<div class="intro"><p class="eyebrow">I tuoi amici. La tua città.</p><h1>Ci vediamo<br><em>fuori.</em></h1><p class="muted">Scopri chi sarà vicino a te.</p></div>'+
       '<div class="dates" aria-label="Giorno dei programmi">'+tabs+'</div>'+
-      '<article class="hangout"><div class="hangout-top"><span class="live">3 amici hanno un piano</span><span>'+event.time.slice(0,5)+'</span></div>'+
+      '<article class="hangout"><div class="hangout-top"><span class="live">3 amici partecipano</span><span>'+event.time.slice(0,5)+'</span></div>'+
       stage()+
       '<div class="hangout-footer"><div><h2>'+esc(featured==='coguaro'?'Tutti al Coguaro':event.title)+'</h2>'+
       '<p>'+esc(event.friends.join(', '))+' · '+esc(event.short.toLowerCase())+'</p></div>'+
       '<span class="round-arrow">'+icon('arrow-up-right')+'</span></div>'+
       '<button class="card-hit cursor-interaction" data-action="event:'+featured+'" aria-label="Vedi '+esc(event.title)+'"></button></article>'+
-      '<div class="section-title"><h2>Tutti i piani</h2><span class="feed-summary">'+count+' programmi</span></div>'+
+      '<div class="section-title"><h2>Eventi in programma</h2><span class="feed-summary">'+count+' eventi</span></div>'+
       FuoriPlanFeed.renderDay(state.day,{state,events,rsvps,icon,esc})+
-      button(icon('plus')+' Dove vai tu?','compose');
+      button(icon('plus')+' Crea un evento','create-event');
   }
-  function detail(){const e=events[state.event],joined=rsvps[state.event];return `${back('Il programma',state.eventOrigin||'home')} ${state.event==='concerto'?poster(true):`<div class="hangout">${stage()}</div>`}<div class="details-title"><span class="chip">${icon('globe-2')}Evento pubblico</span><h1>${e.title}</h1></div><div class="info-row">${icon('calendar-days')}<div><p>${e.date}</p><small>${e.time}</small></div></div><div class="info-row">${icon('map-pin')}<div><p>${e.place}</p><small>Torino e dintorni</small></div></div><hr class="divider"><div class="section-title" style="margin:0 0 5px"><h2>${e.total+(joined?1:0)} partecipanti</h2><span class="muted"><small>${e.friends.length} tuoi amici</small></span></div>${e.friends.map(n=>person(n)).join('')}<p class="privacy">${icon('lock-keyhole')}<span>Solo i tuoi amici possono vedere che partecipi. Gli altri vedono il totale.</span></p>${joined?`<button class="info-row cursor-interaction" data-action="visibility" style="width:100%;text-align:left">${icon(state.visible?'eye':'eye-off')}<div><p>${state.visible?'Visibile ai tuoi amici':'Presenza nascosta'}</p><small>Tocca per ${state.visible?'nasconderti':'renderti visibile'}</small></div></button>`:''}${button(icon(joined?'check':'plus')+(joined?'Ci sei! Annulla partecipazione':'Ci sono anch’io'),'rsvp')}${joined?button('Aggiorna il mio stato','status','create secondary'):''}`;}
-  function createPlan(){return `${back('Un nuovo piano')}<div class="title-block"><h1>Dove ci<br>si vede?</h1><p>Bastano un posto e un orario.</p></div><form class="form" id="fuori-plan-form"><label>Il posto<input name="place" required maxlength="70" placeholder="Es. Coguaro, oppure in centro" autocomplete="off"></label><label>Il giorno<input name="date" type="date" value="${state.day==='today'?'2026-09-23':state.day==='weekend'?'2026-09-26':'2026-09-24'}" required></label><div class="pair"><label>Arrivo alle<input type="time" name="start" value="21:00" required></label><label>Vado via alle · facoltativo<input type="time" name="end"></label></div><label>Chi può vederlo?<select name="visibility"><option value="friends">Solo i miei amici</option><option value="private">Solo io</option></select></label><p class="privacy">${icon('timer')}<span>${'Senza un orario di uscita, il piano scade dopo 4 ore. Puoi nasconderlo prima.'}</span></p><p class="error" role="alert" hidden></p><button type="submit" class="create cursor-interaction">Condividi il piano ${icon('arrow-right')}</button></form>`;}
+  function detail(){const e=events[state.event],joined=rsvps[state.event];return `${back('Il programma',state.eventOrigin||'home')} ${state.event==='concerto'?poster(true):`<div class="hangout">${stage()}</div>`}<div class="details-title"><span class="chip">${icon('globe-2')}Evento pubblico</span><h1>${e.title}</h1></div><div class="info-row">${icon('calendar-days')}<div><p>${e.date}</p><small>${e.time}</small></div></div><div class="info-row">${icon('map-pin')}<div><p>${e.place}</p><small>Torino e dintorni</small></div></div><hr class="divider"><div class="section-title" style="margin:0 0 5px"><h2>${e.total+(joined?1:0)} partecipanti</h2><span class="muted"><small>${e.friends.length} tuoi amici</small></span></div>${e.friends.map(n=>person(n)).join('')}<p class="privacy">${icon('lock-keyhole')}<span>Solo i tuoi amici possono vedere che partecipi. Gli altri vedono il totale.</span></p>${joined?`<button class="info-row cursor-interaction" data-action="visibility" style="width:100%;text-align:left">${icon(state.visible?'eye':'eye-off')}<div><p>${state.visible?'Visibile ai tuoi amici':'Presenza nascosta'}</p><small>Tocca per ${state.visible?'nasconderti':'renderti visibile'}</small></div></button>`:''}${button(icon(joined?'check':'plus')+(joined?'Ci sei! Annulla partecipazione':'Ci sarò'),'rsvp')}${button(maybeRsvps[state.event]?'Forse · annulla risposta':'Ti faccio sapere','rsvp-maybe','create secondary')}${joined?button('Aggiorna il mio stato','status','create secondary'):''}`;}
   function plans(){
-    const ownPlans=state.plans.map((plan,index)=>
-      '<article class="schedule"><span class="eyebrow">'+esc(plan.date)+' · '+esc(plan.start)+'</span>'+
-      '<h3>'+esc(plan.place)+'</h3><p>'+(plan.visibility==='friends'?'Visibile ai tuoi amici':'Visibile solo a te')+
-      ' · fino alle '+esc(plan.end||'01:00')+(plan.nextDay?' del giorno dopo':'')+'</p>'+
-      '<button data-action="hide:'+index+'" class="cursor-interaction">'+(plan.visibility==='friends'?'Nascondi il piano':'Condividi con gli amici')+'</button></article>'
-    ).join('');
+    const filter=state.eventFilter;
+    const filtered=item=>{if(filter==='all')return true;if(item.type==='event')return filter==='attending'?rsvps[item.id]:maybeRsvps[item.id];const response=item.type==='invite'?state.privateResponses.sample:state.privateResponses[state.createdEvents[item.id]?.id];return filter==='attending'?response?.joined:response?.maybe;};
+    const filters='<div class="event-filters" role="group" aria-label="Filtra gli eventi">'+[['all','Tutti'],['attending','Parteciperò'],['maybe','Forse']].map(([id,label])=>'<button type="button" data-filter="'+id+'" aria-pressed="'+(filter===id)+'">'+label+'</button>').join('')+'</div>';
     const ownEvents=state.createdEvents.map((event,index)=>
       '<article class="schedule"><span class="eyebrow">'+esc(event.date)+' · ORGANIZZI TU</span><h3>'+esc(event.title)+'</h3>'+
       '<p>'+(event.visibility==='private'?'Solo su invito':'Evento pubblico')+'</p>'+
       '<button data-action="managed:'+index+'" class="cursor-interaction">Gestisci il tuo evento</button></article>'
     ).join('');
     return '<div class="title-block"><p class="eyebrow">La tua settimana</p><h1 style="margin-top:9px">Cose belle<br>in programma.</h1>'+
-      '<p>Qui trovi i tuoi piani e quelli condivisi dagli amici.</p></div>'+
-      (ownPlans||ownEvents?'<div class="section-title"><h2>Organizzi tu</h2></div>'+ownPlans+ownEvents:'')+
-      '<div class="section-title"><h2>La settimana</h2><span class="feed-summary">Torino</span></div>'+
-      FuoriPlanFeed.renderWeek({state,events,rsvps,icon,esc})+
-      button(icon('plus')+' Un nuovo programma','compose');
+      '<p>Eventi pubblici e inviti privati, tutti nello stesso posto.</p></div>'+filters+
+      (ownEvents&&filter==='all'?'<div class="section-title"><h2>Organizzi tu</h2></div>'+ownEvents:'')+
+      '<div class="section-title"><h2>'+(filter==='all'?'La settimana':'I tuoi eventi')+'</h2><span class="feed-summary">Torino</span></div>'+
+      (FuoriPlanFeed.renderWeek({state,events,rsvps,icon,esc,filter:filtered})||'<p class="muted">'+(filter==='attending'?'Nessun evento a cui parteciperai.':filter==='maybe'?'Nessun evento in forse.':'Nessun evento in anteprima.')+'</p>')+
+      button(icon('plus')+' Crea un evento','create-event');
   }
-  function ownPlanDetail(){
-    const plan=state.plans[state.ownPlan];
-    if(!plan)return back('Il tuo piano',state.planOrigin||'plans')+'<p>Questo piano non è disponibile.</p>';
-    return back('Il tuo piano',state.planOrigin||'plans')+
-      '<div class="title-block"><p class="eyebrow">Il tuo programma</p><h1 style="margin-top:9px">'+esc(plan.place)+'</h1></div>'+
-      '<div class="info-row">'+icon('calendar-days')+'<div><p>'+esc(plan.date)+'</p><small>'+esc(plan.start)+' – '+esc(plan.end)+(plan.nextDay?' del giorno dopo':'')+'</small></div></div>'+
-      '<div class="info-row">'+icon('eye')+'<div><p>'+(plan.visibility==='friends'?'Visibile ai tuoi amici':'Visibile solo a te')+'</p><small>Puoi cambiare la visibilità in qualsiasi momento.</small></div></div>'+
-      button(plan.visibility==='friends'?'Nascondi questo piano':'Condividi con gli amici','hide:'+state.ownPlan);
-  }
-  function friends(){return `<div class="title-block"><p class="eyebrow">Le tue persone</p><h1 style="margin-top:9px">Ci si trova<br>tra amici.</h1></div><div class="invite-card"><h2>Un link.<br>Un amico in più.</h2><p>Aggiungi chi conosci, con un invito o un QR.</p>${button(icon('user-plus')+' Aggiungi un amico','invite')}</div><div class="section-title"><h2>La tua cerchia</h2><small class="muted">3 amici</small></div>${person('Vale','Coguaro · domani alle 21:30')}${person('Fra','Coguaro · domani alle 21')}${person('Leo','Nessun altro piano condiviso')}${state.requested?'<p class="privacy">'+icon('clock-3')+'Richiesta a Giulia in attesa di conferma.</p>':''}`;}
-  function invite(){return `${back('Aggiungi un amico','friends')}<div class="invite-intro"><p class="eyebrow">La tua cerchia</p><h1>Ci troviamo<br>su Fuori.</h1><p>Inquadra il QR di un amico o condividi il tuo invito.</p></div>
-    <section class="invite-section qr-card" aria-labelledby="qr-heading"><div class="invite-section-heading"><span>${icon('qr-code')}</span><div><h2 id="qr-heading">Il tuo QR code</h2><p>Fallo inquadrare per invitarvi</p></div></div><div class="qr-shell"><canvas id="invite-qr" width="206" height="206" role="img" aria-label="QR code personale"></canvas><p class="qr-error" data-qr-error hidden>Il QR non è disponibile in questo momento.</p></div><p class="qr-owner">${esc(state.name)}</p><p class="qr-hint">Il tuo invito personale</p></section>
-    <section class="invite-section scanner-section" aria-labelledby="scanner-heading"><div class="invite-section-heading"><span>${icon('scan-line')}</span><div><h2 id="scanner-heading">Inquadra un QR code</h2><p>Centra il codice nel riquadro</p></div></div><div class="scanner-viewport" data-active="false"><video id="qr-camera" playsinline muted hidden aria-label="Anteprima della fotocamera"></video><div class="scanner-placeholder" aria-hidden="true">${icon('camera')}</div><div class="scan-frame" aria-hidden="true"></div></div><canvas id="qr-decode-canvas" hidden></canvas><input id="qr-camera-capture" type="file" accept="image/*" capture="environment" hidden aria-label="Scatta una foto del QR"><p class="scan-status" data-scan-status aria-live="polite">Apri la fotocamera per scansionare l’invito di un amico.</p>${button(icon('scan-line')+' Apri la fotocamera','start-qr-scan')}</section>
-    <section class="invite-section invite-share" aria-labelledby="share-heading"><div class="invite-section-heading"><span>${icon('link')}</span><div><h2 id="share-heading">Preferisci mandare un link?</h2><p>Condividi il tuo invito in chat</p></div></div><input class="invite-link" id="invite-link" aria-label="Il tuo link d’invito" readonly value="${esc(inviteUrl())}"><button class="create cursor-interaction" type="button" data-action="share-invite">${icon('share-2')} Condividi il link</button></section>`;}
-  function request(){const inviter=state.incomingInvite?.name||'Giulia';return `${back('Invito personale','invite')}<div class="invite-preview"><div class="portrait fra" aria-hidden="true"></div><span class="chip">Ti ha invitato</span><h2>${esc(inviter)}</h2><p>Una nuova persona nella tua cerchia.</p></div><p class="privacy">${icon('lock-keyhole')}<span>I vostri piani restano privati fino a quando ${esc(inviter)} accetta la richiesta.</span></p>${button(icon(state.requested?'clock-3':'user-plus')+(state.requested?'Richiesta inviata · annulla':'Chiedi l’amicizia'),'request')}`;}
+  function friends(){return `<div class="title-block"><p class="eyebrow">Le tue persone</p><h1 style="margin-top:9px">Ci si trova<br>tra amici.</h1></div><div class="invite-card"><h2>Un link.<br>Un amico in più.</h2><p>Aggiungi chi conosci, con un invito o un QR.</p>${button(icon('user-plus')+' Aggiungi un amico','invite')}</div><div class="section-title"><h2>La tua cerchia</h2><small class="muted">3 amici</small></div>${person('Vale','Coguaro · domani alle 21:30')}${person('Fra','Coguaro · domani alle 21')}${person('Leo','Nessun evento in programma')}${state.requested?'<p class="privacy">'+icon('clock-3')+'Richiesta a Giulia in attesa di conferma.</p>':''}`;}
+  function invite(){const scan=state.inviteMode==='scan';return `<div class="invite-view" data-invite-mode="${state.inviteMode}">
+    <div class="invite-toolbar"><button class="icon-button" data-action="back:friends" aria-label="Chiudi QR">${icon('x')}</button><strong>Aggiungi un amico</strong><button class="share-top" data-action="share-invite">${icon('share-2')} Condividi</button></div>
+    <div class="invite-mode-body"><p class="eyebrow">${scan?'SCAN':'SHOW'}</p><h1>${scan?'Inquadra un QR.':'Mostra il tuo QR.'}</h1><p>${scan?'Scansiona il codice di un amico per chiedere l’amicizia.':'Un amico può inquadrarlo per aggiungerti.'}</p>
+    ${scan?`<section class="invite-section scanner-section"><div class="scanner-viewport" data-active="false"><video id="qr-camera" playsinline muted hidden aria-label="Anteprima della fotocamera"></video><div class="scanner-placeholder" aria-hidden="true">${icon('camera')}</div><div class="scan-frame" aria-hidden="true"></div></div><canvas id="qr-decode-canvas" hidden></canvas><input id="qr-camera-capture" type="file" accept="image/*" capture="environment" hidden aria-label="Scatta una foto del QR"><p class="scan-status" data-scan-status aria-live="polite">Centra il QR nel riquadro.</p>${button(icon('scan-line')+' Apri la fotocamera','start-qr-scan')}</section>`:`<section class="invite-section qr-card"><div class="qr-shell"><canvas id="invite-qr" width="206" height="206" role="img" aria-label="QR code personale"></canvas><p class="qr-error" data-qr-error hidden>Il QR non è disponibile in questo momento.</p></div><p class="qr-owner">${esc(state.name)}</p><p class="qr-hint">Il tuo invito personale · anteprima</p></section>`}
+    </div><div class="invite-switch" role="group" aria-label="Modalità QR"><button data-invite-mode="scan" aria-pressed="${scan}">${icon('scan-line')} Scan</button><button data-invite-mode="show" aria-pressed="${!scan}">${icon('qr-code')} Show</button></div><p class="invite-note">Scorri a destra o sinistra per cambiare modalità. QR e link funzionano solo in questa anteprima.</p><input id="invite-link" readonly value="${esc(inviteUrl())}" hidden></div>`;}
+  function request(){const inviter=state.incomingInvite?.name||'Giulia';return `${back('Invito personale','invite')}<div class="invite-preview"><div class="portrait fra" aria-hidden="true"></div><span class="chip">Ti ha invitato</span><h2>${esc(inviter)}</h2><p>Una nuova persona nella tua cerchia.</p></div><p class="privacy">${icon('lock-keyhole')}<span>I vostri eventi privati restano riservati fino a quando ${esc(inviter)} accetta la richiesta.</span></p>${button(icon(state.requested?'clock-3':'user-plus')+(state.requested?'Richiesta inviata · annulla':'Chiedi l’amicizia'),'request')}`;}
   const colors=FuoriHabbo.colors;
   function wardrobe(){
     const o=state.draft||state.outfit;
@@ -325,10 +333,7 @@
   function privateData(){return state.selectedCreated==null?samplePrivate:state.createdEvents[state.selectedCreated]||samplePrivate;}
   function privateResponse(){const key=privateData().id||'sample';return state.privateResponses[key]||(state.privateResponses[key]={joined:false,maybe:false});}
   function cover(e){return e.cover==='music'?poster(true):`<div class="house-cover"><span class="chip">${icon(e.visibility==='private'?'lock-keyhole':'globe-2')}${e.visibility==='private'?'Solo su invito':'Evento pubblico'}</span><h2>${esc(e.title)}</h2><small>${esc(e.date)} · dalle ${esc(e.time)}</small></div>`;}
-  function compose(){return `${back('Un nuovo programma')}<div class="title-block"><h1>Un posto.<br>Un buon motivo.</h1><p>Fai sapere dove vai, oppure organizza qualcosa tu.</p></div>
-    <button class="choose-row cursor-interaction" data-action="new"><span class="choose-icon">${icon('map-pin')}</span><div><h3>Io sarò qui</h3><p>Condividi un posto e un orario con i tuoi amici.</p></div>${icon('chevron-right')}</button>
-    <button class="choose-row cursor-interaction" data-action="create-event"><span class="choose-icon" style="background:var(--peach)">${icon('party-popper')}</span><div><h3>Organizzo io</h3><p>Una festa, un aperitivo, una serata da ricordare.</p></div>${icon('chevron-right')}</button>`;}
-  function createEvent(){const e=state.eventDraft;return `${back('Organizzi tu','compose')}<div class="title-block"><h1>Le belle serate<br>iniziano così.</h1><p>Dai un nome al programma.</p></div><form class="form" id="fuori-event-form">
+  function createEvent(){const e=state.eventDraft;return `${back('Organizzi tu','plans')}<div class="title-block"><h1>Le belle serate<br>iniziano così.</h1><p>Dai un nome al programma.</p></div><form class="form" id="fuori-event-form">
     <label>Come lo chiami?<input name="title" value="${esc(e.title)}" maxlength="65" required></label>
     <label>Il posto<input name="place" value="${esc(e.place)}" maxlength="100" required></label>
     <div class="pair"><label>Il giorno<input name="date" type="date" value="${esc(e.date)}" required></label><label>Dalle<input name="time" type="time" value="${esc(e.time)}" required></label></div>
@@ -338,7 +343,7 @@
   function reviewEvent(){const e=state.eventDraft;return `${back('Controlla il tuo evento','create-event')}${cover(e)}<div class="review-value"><small>Il posto</small>${esc(e.place)}</div><div class="review-value"><small>Accesso</small>${e.visibility==='private'?'Solo chi riceve il tuo invito':'Pagina pubblica, identità visibili solo agli amici'}</div><p class="privacy">${icon('lock-keyhole')}<span>${e.visibility==='private'?'L’invito non aggiunge automaticamente nessuno agli amici.':'Le persone vedono il totale dei partecipanti e soltanto i propri amici.'}</span></p>${button('Crea questo evento','confirm-event')}`;}
   function manageEvent(){const e=privateData();return `${back('Organizzi tu','plans')}${cover(e)}<div class="section-title"><h2>${privateResponse().joined?1:0} partecipanti</h2><span class="chip">Sei l’organizzatore</span></div><p class="muted" style="font-size:13px">Il programma è pronto. Ora manca la tua gente.</p>${button(icon('link')+' Il link d’invito','event-link')}${button('Guarda l’invito','private-invite','create secondary')}`;}
   function eventLink(){return `${back('Il tuo invito','manage-event')}<div class="title-block"><h1>Una serata.<br>Un solo link.</h1><p>Da condividere con le persone che vuoi invitare.</p></div><label class="form"><span style="font-size:12px">Link dimostrativo</span><input readonly value="fuori.example/evento/serata-demo" aria-label="Link dimostrativo non attivo"></label>${button('Prova l’invito','private-invite')}<p class="note-copy">Questo link serve solo a provare il flusso nell’anteprima.</p>`;}
-  function privateInvite(){const e=privateData();return `${back('Hai un invito','home')}${cover(e)}<div class="info-row">${portrait('Fra')}<div><p>${state.selectedCreated==null?'Fra ti ha invitato':esc(state.name)+' ti ha invitato'}</p><small>Un posto anche per te.</small></div></div><div class="info-row">${icon('map-pin')}<div><p>${esc(e.place)}</p><small>${e.visibility==='private'?'Condiviso tramite invito':'Evento pubblico'}</small></div></div><div class="info-row">${icon('calendar-days')}<div><p>${esc(e.date)}</p><small>Dalle ${esc(e.time)}</small></div></div><hr class="divider"><h2>${(state.selectedCreated==null?12:0)+(privateResponse().joined?1:0)} partecipanti</h2><p class="note-copy">${e.visibility==='private'?'Nell’anteprima l’invito mostra solo il totale.':'Il totale è pubblico. I nomi sono visibili soltanto agli amici.'}</p>${button(icon(privateResponse().joined?'check':'plus')+(privateResponse().joined?'Ci sei! Annulla partecipazione':'Ci sarò'),'private-rsvp')}${button(privateResponse().maybe?'Hai risposto: forse':'Ti faccio sapere','private-maybe','create secondary')}`;}
+  function privateInvite(){const e=privateData();return `${back('Hai un invito','home')}${cover(e)}<div class="info-row">${portrait('Fra')}<div><p>${state.selectedCreated==null?'Fra ti ha invitato':esc(state.name)+' ti ha invitato'}</p><small>Un posto anche per te.</small></div></div><div class="info-row">${icon('map-pin')}<div><p>${esc(e.place)}</p><small>${e.visibility==='private'?'Condiviso tramite invito':'Evento pubblico'}</small></div></div><div class="info-row">${icon('calendar-days')}<div><p>${esc(e.date)}</p><small>Dalle ${esc(e.time)}</small></div></div><hr class="divider"><h2>${(state.selectedCreated==null?12:0)+(privateResponse().joined?1:0)} partecipanti</h2>${e.visibility==='private'?'<div class="section-title"><h2>Gli altri invitati</h2></div>'+['Domi','Vale','Leo'].map(name=>person(name,'Ha ricevuto un invito')).join(''):'<p class="note-copy">Il totale è pubblico. I nomi sono visibili soltanto agli amici.</p>'}${button(icon(privateResponse().joined?'check':'plus')+(privateResponse().joined?'Ci sei! Annulla partecipazione':'Ci sarò'),'private-rsvp')}${button(privateResponse().maybe?'Hai risposto: forse':'Ti faccio sapere','private-maybe','create secondary')}`;}
   function settings(){return `${back('Il tuo profilo','avatar')}<div class="title-block"><h1>Come vuoi<br>esserci.</h1></div><button class="settings-row cursor-interaction" data-action="settings-visible" aria-pressed="${state.visible}"><span>Visibile ai miei amici<small>Negli eventi pubblici a cui partecipo.</small></span><span class="switch-display" aria-hidden="true"></span></button>
     <button class="settings-row cursor-interaction" data-action="invite"><span>Il mio invito personale<small>Aggiungi un amico tramite link.</small></span>${icon('chevron-right')}</button>
     <button class="settings-row cursor-interaction" data-action="sample-invite"><span>Il tuo invito da Fra<small>Sabato · una serata a casa.</small></span>${icon('chevron-right')}</button>
@@ -347,10 +352,10 @@
   function identity(){return `${back('Il primo passo','welcome')}<div class="onboard-steps"><span class="done"></span><span></span><span></span></div><div class="title-block"><h1>Come<br>ti chiami?</h1><p>È il nome che vedranno i tuoi amici.</p></div><form class="form" id="fuori-identity-form"><label>Il tuo nome<input name="name" value="${esc(state.name)}" maxlength="30" required autocomplete="given-name"></label><label>La tua città<input readonly value="Torino"></label><p class="error" role="alert"></p><button type="submit" class="create cursor-interaction">Creo il mio personaggio ${icon('arrow-right')}</button></form>`;}
   function ready(){return `<div class="onboard-steps"><span class="done"></span><span class="done"></span><span class="done"></span></div><div class="title-block"><h1>Eccoti,<br>${esc(state.name)}.</h1><p>Ora manca solo la tua cerchia.</p></div><div class="wardrobe">${stage(true)}</div><p class="privacy">${icon('users')}<span>Gli amici si aggiungono con un invito o un QR. Nessuna ricerca delle persone.</span></p><p class="privacy">${icon('lock-keyhole')}<span>Negli eventi pubblici, solo gli amici vedono che ci sei.</span></p>${button('Aggiungi il primo amico','finish-add-friend')}${button('Lo faccio dopo','finish-onboarding','create secondary')}`;}
 
-  const screens={home,plans,friends,avatar:wardrobe,event:detail,'own-plan':ownPlanDetail,'friend-plan':()=>FuoriPlanFeed.friendDetail(state.friendPlan,{back,icon,button,esc,person,origin:state.planOrigin||'home'}),new:createPlan,invite,request,status,compose,'create-event':createEvent,'review-event':reviewEvent,'manage-event':manageEvent,'event-link':eventLink,'private-invite':privateInvite,settings,welcome,identity,ready};
+  const screens={home,plans,friends,avatar:wardrobe,event:detail,invite,request,status,'create-event':createEvent,'review-event':reviewEvent,'manage-event':manageEvent,'event-link':eventLink,'private-invite':privateInvite,settings,welcome,identity,ready};
   function render(){
     disposeScene();page.innerHTML=(screens[state.screen]||home)();
-    root.querySelector('.bottom').hidden=['welcome','identity','ready'].includes(state.screen)||(state.screen==='avatar'&&state.onboarding);
+    root.querySelector('.bottom').hidden=['welcome','identity','ready','invite'].includes(state.screen)||(state.screen==='avatar'&&state.onboarding);
     root.querySelectorAll('[data-nav]').forEach(b=>{if(b.dataset.nav===state.screen)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});
     root.querySelectorAll('button:not([type])').forEach(b=>b.type='button');
     if(globalThis.lucide)globalThis.lucide.createIcons({attrs:{'aria-hidden':'true'}});
@@ -387,6 +392,8 @@
     if(!b||!root.contains(b))return;
     if(b.dataset.nav){if(b.dataset.nav==='avatar')state.draft={...state.outfit};go(b.dataset.nav);return;}
     if(b.dataset.day){state.day=b.dataset.day;render();page.scrollTop=0;persist();return;}
+    if(b.dataset.filter){state.eventFilter=b.dataset.filter;render();persist();return;}
+    if(b.dataset.inviteMode){setInviteMode(b.dataset.inviteMode);return;}
     if(b.dataset.category){state.category=b.dataset.category;render();return;}
     if(b.dataset.outfit){state.draft=state.draft||{...state.outfit};state.draft[state.category]=b.dataset.outfit;updateAvatarPreview();return;}
     const a=b.dataset.action;
@@ -395,22 +402,18 @@
     if(a==='share-invite'){shareInvite();return;}
     if(a.startsWith('back:')){go(a.slice(5));return;}
     if(a.startsWith('event:')){state.event=a.slice(6);state.eventOrigin=state.screen;go('event');return;}
-    if(a.startsWith('friend-plan:')){state.friendPlan=a.slice(12);state.planOrigin=state.screen;go('friend-plan');return;}
-    if(a.startsWith('own-plan:')){state.ownPlan=Number(a.slice(9));state.planOrigin=state.screen;go('own-plan');return;}
-    if(a.startsWith('join-friend:')){
-      const friend=FuoriPlanFeed.friendPlans[a.slice(12)];
-      if(friend){go('new');page.querySelector('[name=place]').value=friend.place;page.querySelector('[name=date]').value=friend.date;page.querySelector('[name=start]').value=friend.time;page.querySelector('[name=end]').value=friend.end;}
-      return;
-    }
-    if(a.startsWith('hide:')){const plan=state.plans[Number(a.slice(5))];if(!plan)return;plan.visibility=plan.visibility==='friends'?'private':'friends';render();persist();return;}
-    if(a==='rsvp'){rsvps[state.event]=!rsvps[state.event];render();persist();return;}
+    if(a==='rsvp'){rsvps[state.event]=!rsvps[state.event];maybeRsvps[state.event]=false;render();persist();return;}
+    if(a==='rsvp-maybe'){maybeRsvps[state.event]=!maybeRsvps[state.event];rsvps[state.event]=false;render();persist();return;}
     if(a==='visibility'){state.visible=!state.visible;render();persist();return;}
     if(a==='request'){state.requested=!state.requested;render();persist();return;}
     if(a==='save-avatar'){state.outfit={...(state.draft||state.outfit)};state.draft=null;if(state.onboarding)go('ready');else{render();notice('Il tuo look è salvato in questa anteprima.');persist();}return;}
     if(screens[a])go(a);
   });
   root.addEventListener('change',e=>{if(e.target?.id==='qr-camera-capture')decodeCapturedQr(e.target.files?.[0]);});
-  root.addEventListener('submit',e=>{e.preventDefault();const form=e.target,data=new FormData(form);if(form.id==='fuori-plan-form'){const place=String(data.get('place')).trim(),date=String(data.get('date')),start=String(data.get('start')),givenEnd=String(data.get('end'));if(!place||!date||!start){const error=form.querySelector('.error');error.textContent='Scegli un posto, un giorno e un orario.';error.hidden=false;return;}const [h,m]=start.split(':').map(Number);const end=givenEnd||`${String((h+4)%24).padStart(2,'0')}:${String(m).padStart(2,'0')}`;if(end===start){const error=form.querySelector('.error');error.textContent='L’arrivo e l’uscita non possono coincidere.';error.hidden=false;return;}state.plans.unshift({place,date,start,end,nextDay:end<start,visibility:String(data.get('visibility'))});go('plans');}else if(form.id==='fuori-status-form'){go('event');notice(`${data.get('status')} · visibile agli amici per ${data.get('duration')}. Aggiornamento simulato.`);}});
+  let inviteTouchStart=null;
+  page.addEventListener('touchstart',e=>{if(state.screen==='invite'&&e.touches.length===1)inviteTouchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+  page.addEventListener('touchend',e=>{if(state.screen!=='invite'||!inviteTouchStart||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-inviteTouchStart.x,dy=e.changedTouches[0].clientY-inviteTouchStart.y;inviteTouchStart=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4)setInviteMode(dx>0?'scan':'show');},{passive:true});
+  root.addEventListener('submit',e=>{if(e.target.id!=='fuori-status-form')return;e.preventDefault();const data=new FormData(e.target);go('event');notice(`${data.get('status')} · visibile agli amici per ${data.get('duration')}. Aggiornamento simulato.`);});
   render();
   if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:()=>{root.style.setProperty('--accent',design.tone==='coral'?'light-dark(#c63e28,#ff9987)':'light-dark(#385cb0,#a9bfff)');root.style.setProperty('--accent-ink',design.tone==='coral'?'light-dark(#fff,#29140f)':'light-dark(#fff,#12254e)');root.style.setProperty('--radius',design.softness+'px');}});tweak.addSelect(design,'tone',{label:'Accento',options:[{label:'Corallo',value:'coral'},{label:'Cobalto',value:'blue'}]});tweak.addSlider(design,'softness',{label:'Angoli',min:16,max:32,unit:'px'});}
 
