@@ -25,13 +25,13 @@ Il personaggio personalizzabile è parte centrale dell'identità visiva. La UI d
 
 ## Primo rilascio utilizzabile
 
-Il primo MVP comprende account, profilo, avatar personalizzabile, inviti e amicizie con accettazione, luoghi iniziali di Torino, eventi pubblici e privati, RSVP, conteggi, stati brevi e impostazioni di privacy. Deve funzionare su web mobile e desktop.
+L'ordine di sviluppo dopo la bozza Flutter è: account e database, grafica con asset finali e avatar persistente, inviti e amicizie con accettazione, stati brevi e impostazioni di privacy, eventi pubblici e privati reali con RSVP, catalogo dei luoghi. Tutti questi percorsi restano nel primo rilascio web/PWA, che deve funzionare su web mobile e desktop.
 
 Il primo rilascio è riservato alle persone maggiorenni (18+). La registrazione richiede una casella obbligatoria, inizialmente non selezionata, con il testo «Confermo di avere almeno 18 anni», anche per chi accede con Google. Il backend registra la dichiarazione e impedisce l'uso delle funzioni riservate finché manca. Non raccogliere la data di nascita completa per questo controllo iniziale. La dichiarazione non prova da sola l'età: prima della pubblicazione valutare e documentare se è adeguata ai rischi del servizio.
 
 Restano fuori dal primo MVP chat privata, ricerca globale, geolocalizzazione continua, mappa live, feed infinito, marketplace e matching con sconosciuti.
 
-Il MVP è verificabile con almeno due account reali: un'amicizia nasce tramite richiesta, un evento viene creato e scade correttamente, un estraneo non riceve identità o dati privati non autorizzati, e un invito revocato smette di funzionare.
+Il primo rilascio è verificabile con almeno due account reali: un'amicizia nasce tramite richiesta, gli stati temporanei rispettano scadenza e visibilità, un estraneo non riceve dati privati non autorizzati e un invito revocato smette di funzionare. Si verificano inoltre creazione degli eventi, RSVP, scadenza e regole di accesso agli eventi.
 
 ## Dati e sicurezza
 
