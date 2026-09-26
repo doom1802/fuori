@@ -31,7 +31,7 @@ jobs:
       - name: Applica tutte le migrazioni su database vuoto
         run: supabase db reset --local
       - name: Controlla le funzioni SQL
-        run: supabase db lint --local --level error
+        run: supabase db lint --local --schema public,private --level error --fail-on error
       - name: Ferma il database locale
         if: always()
         run: supabase stop --no-backup
