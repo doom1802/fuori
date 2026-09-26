@@ -1,7 +1,10 @@
+import 'dart:ui' as ui;
+
 import 'package:fuori/app/widgets.dart';
 import 'package:fuori/features/account/avatar_catalog.dart';
 import 'package:fuori/app/avatar_sprite.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fuori/app/fuori_theme.dart';
 import 'package:fuori/app/screens.dart';
@@ -111,6 +114,75 @@ void main() {
       }
     }
   });
+
+  testWidgets(
+    'i capelli non cancellano gli occhi sulle due basi e viste frontali',
+    (tester) async {
+      final key = GlobalKey();
+      Future<List<int>> eyes(AvatarBody body, int direction, int hair) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Center(
+              child: RepaintBoundary(
+                key: key,
+                child: SizedBox(
+                  width: 128,
+                  height: 256,
+                  child: AvatarSprite(
+                    look: AvatarLook(body: body, hairModel: hair),
+                    direction: direction,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        final x = switch (direction) {
+          1 => 94,
+          5 => 36,
+          6 => 52,
+          7 => 65,
+          _ => 78,
+        };
+        return (await tester.runAsync(() async {
+          final boundary =
+              key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+          final image = await boundary.toImage(pixelRatio: 1);
+          try {
+            final data = (await image.toByteData(
+              format: ui.ImageByteFormat.rawRgba,
+            ))!.buffer.asUint8List();
+            return [
+              for (var y = 64; y < 70; y++)
+                for (var dx = x - 3; dx < x + 3; dx++)
+                  for (var c = 0; c < 4; c++) data[(y * 128 + dx) * 4 + c],
+            ];
+          } finally {
+            image.dispose();
+          }
+        }))!;
+      }
+
+      for (final body in AvatarBody.values) {
+        for (final direction in [0, 1, 5, 6, 7]) {
+          final baseline = await eyes(body, direction, 3);
+          expect(
+            baseline.toSet().length,
+            greaterThan(4),
+            reason: 'La zona degli occhi deve contenere lo sprite renderizzato',
+          );
+          for (var hair = 0; hair < 8; hair++) {
+            expect(
+              await eyes(body, direction, hair),
+              baseline,
+              reason: '$body vista $direction capelli $hair coprono gli occhi',
+            );
+          }
+        }
+      }
+    },
+  );
 
   testWidgets(
     'saluto e tutti gli extra compatibili si compongono sulle otto viste',

@@ -18,4 +18,6 @@ Provenienza, prompt, catalogo e formato degli asset: `assets/avatar/catalog/READ
 
 Verifiche: serializzazione di tutti gli 8.192 abbinamenti dei quattro modelli su due basi, combinazione/sostituzione degli extra, indicizzazione delle otto direzioni, errori di salvataggio e ripristino delle preferenze precedenti. Nel browser locale il salvataggio di un look completo è stato verificato su Supabase locale e riletto dopo il ricaricamento. La revisione artistica delle combinazioni resta parte di M3.
 
-Controlli dell’integrazione: 20 test Flutter superati; build web riuscita. Layout ispezionato nel browser a 320, 420 e 1280 px con combinazioni su entrambe le basi, saluto e vista posteriore. La UI mostra i colori vicino alle categorie e le otto alternative con miniature.
+La composizione protegge il viso dai capelli, allinea occhiali e mani per orientamento e nasconde la pelle coperta dai pantaloni. I metadati escludono i frammenti degli oggetti vicini nelle tavole. Un confronto dei pixel renderizzati verifica che gli occhi restino intatti cambiando acconciatura su entrambe le basi e nelle cinque viste del volto.
+
+Controlli dell’integrazione: 21 test Flutter superati; build web riuscita. Layout ispezionato nel browser a 320, 420 e 1280 px con combinazioni su entrambe le basi, saluto e vista posteriore. La UI mostra i colori vicino alle categorie e le otto alternative con miniature. La correzione degli incastri è stata verificata anche su una tavola di rendering con il look segnalato nelle otto direzioni e tutti i modelli in posa normale e saluto.

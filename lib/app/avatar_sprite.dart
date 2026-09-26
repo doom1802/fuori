@@ -111,7 +111,7 @@ class _AvatarSpriteState extends State<AvatarSprite> {
 
   void _setAssets(AvatarSpriteAssets assets) {
     _assets = assets;
-    for (var i = 0; i < 14; i++) {
+    for (var i = 0; i < 18; i++) {
       _shaders.add(assets.program.fragmentShader());
     }
   }
@@ -232,8 +232,8 @@ class _AvatarPainter extends CustomPainter {
     }
     final female = look.body == AvatarBody.female;
     final idleRow = female ? 1 : 0;
-    final poseRow = idleRow + (wave ? 2 : 0);
     final bodyWidth = female ? .94 : 1.0;
+    final rear = const [2, 3, 4].contains(direction);
     Color color(int category) =>
         AvatarPalette.colors[category][look.choices[category]];
     void layer(
@@ -289,18 +289,50 @@ class _AvatarPainter extends CustomPainter {
 
     final skin = overrides?[4] ?? color(5);
     const skinRef = Color(0xFFE2AD84);
+    // Hair has a rear silhouette and a foreground fringe. A wig's generated
+    // opening is not a reliable face mask: register both passes to the same
+    // crown, and protect the facial plane in the foreground pass.
+    void hairLayer() {
+      if (look.hairModel == 3) return;
+      canvas.save();
+      if (look.accessoryMask & 0x18 != 0) {
+        canvas.clipRect(const Rect.fromLTWH(0, 51, 128, 205));
+      }
+      layer(
+        'hair',
+        'hair',
+        look.hairModel,
+        look.hairModel == 7
+            ? const Rect.fromLTWH(23, 25, 84, 90)
+            : Rect.fromLTWH(
+                13,
+                18,
+                104,
+                look.hairModel >= 4 && look.hairModel <= 6 ? 117 : 96,
+              ),
+        tint: overrides?[1] ?? color(1),
+        enabled: overrides != null || look.hair != 0,
+        reference: const Color(0xFF392B29),
+        alignment: Alignment.topCenter,
+      );
+      canvas.restore();
+    }
+
+    hairLayer();
     canvas.save();
     canvas.clipRect(const Rect.fromLTWH(0, 0, 128, 233));
-    layer(
-      'body',
-      'body-legs',
-      idleRow,
-      const Rect.fromLTWH(31, 193, 66, 39),
-      tint: skin,
-      enabled: true,
-      reference: skinRef,
-      alignment: Alignment.bottomCenter,
-    );
+    if (look.bottomModel == 4 || look.bottomModel == 6) {
+      layer(
+        'body',
+        'body-legs',
+        idleRow,
+        const Rect.fromLTWH(31, 193, 66, 39),
+        tint: skin,
+        enabled: true,
+        reference: skinRef,
+        alignment: Alignment.bottomCenter,
+      );
+    }
     canvas.restore();
     if (look.accessoryMask & (1 << 6) != 0 && ![2, 3, 4].contains(direction)) {
       layer('extras', 'extras', 6, const Rect.fromLTWH(15, 124, 94, 78));
@@ -327,49 +359,77 @@ class _AvatarPainter extends CustomPainter {
       reference: skinRef,
       alignment: Alignment.bottomCenter,
     );
-    layer(
-      'body',
-      'body-hands',
-      poseRow,
-      const Rect.fromLTWH(13, 173, 103, 24),
-      tint: skin,
-      enabled: true,
-      reference: skinRef,
+    final topAtlas = wave ? 'tops-wave' : 'tops';
+    final topTarget = Rect.fromLTWH(
+      64 - 47 * bodyWidth,
+      wave ? 109 : 111,
+      94 * bodyWidth,
+      wave ? 82 : 78,
     );
+    final topSource = assets.source(topAtlas, look.topModel, direction)!;
+    final topBounds = Alignment.topCenter.inscribe(
+      applyBoxFit(BoxFit.contain, topSource.size, topTarget.size).destination,
+      topTarget,
+    );
+    void forearm(double x, double top, double bottom) {
+      if (bottom <= top) return;
+      canvas.drawRect(
+        Rect.fromLTRB(x - 4, top, x + 4, bottom),
+        Paint()
+          ..color = const Color(0xFF312B2C)
+          ..isAntiAlias = false,
+      );
+      canvas.drawRect(
+        Rect.fromLTRB(x - 2, top, x + 2, bottom),
+        Paint()
+          ..color = skin
+          ..isAntiAlias = false,
+      );
+    }
+
+    // Hands follow the sleeve bounds, including narrower profile views.
+    for (final left in [true, false]) {
+      if (wave && left != (direction < 4)) continue;
+      final sideView = direction == 1 || direction == 5;
+      final fraction = left ? (sideView ? .28 : .1) : (sideView ? .72 : .9);
+      final x = topBounds.left + topBounds.width * fraction;
+      final y = topBounds.bottom - 5;
+      if (look.topModel == 1) {
+        forearm(x, topBounds.top + topBounds.height * .66, y + 4);
+      }
+      layer(
+        'body',
+        left ? 'body-hand-left' : 'body-hand-right',
+        idleRow,
+        Rect.fromLTWH(x - 7, y, 14, 20),
+        tint: skin,
+        enabled: true,
+        reference: skinRef,
+        alignment: Alignment.topCenter,
+      );
+    }
     if (wave) {
+      final x = direction < 4 ? topBounds.right - 7 : topBounds.left + 7;
+      forearm(x, 109, topBounds.top + 24);
       layer(
         'body',
         'body-raised',
         idleRow,
-        Rect.fromLTWH(direction < 4 ? 85 : 14, 90, 25, 29),
+        Rect.fromLTWH(x - 9, 90, 18, 26),
         tint: skin,
         enabled: true,
         reference: skinRef,
+        alignment: Alignment.bottomCenter,
       );
     }
-    if (wave) {
-      // Pixel steps connect the skin hand to the raised sleeve in every view.
-      final right = direction < 4;
-      final armX = right ? 96.0 : 25.0;
-      final edge = Paint()
-        ..color = const Color(0xFF312B2C)
-        ..isAntiAlias = false;
-      final fill = Paint()
-        ..color = skin
-        ..isAntiAlias = false;
-      for (var step = 0; step < 3; step++) {
-        final x = armX + (right ? step * 2 : -step * 2);
-        canvas.drawRect(Rect.fromLTWH(x, 112 + step * 8, 8, 12), edge);
-        canvas.drawRect(Rect.fromLTWH(x + 2, 112 + step * 8, 4, 10), fill);
-      }
-    }
     layer(
-      wave ? 'tops-wave' : 'tops',
-      wave ? 'tops-wave' : 'tops',
+      topAtlas,
+      topAtlas,
       look.topModel,
-      Rect.fromLTWH(17, wave ? 109 : 111, 94 * bodyWidth, wave ? 82 : 78),
+      topTarget,
       tint: overrides?[0] ?? color(0),
       enabled: overrides != null || look.clothes != 0,
+      alignment: Alignment.topCenter,
     );
     if (look.bottomModel == 7) {
       layer(
@@ -404,24 +464,37 @@ class _AvatarPainter extends CustomPainter {
     }
     if (look.hairModel != 3) {
       canvas.save();
-      if (look.accessoryMask & 0x18 != 0) {
-        canvas.clipRect(const Rect.fromLTWH(0, 51, 128, 205));
+      if (!rear) {
+        final face = Path();
+        if (direction == 7) {
+          face.moveTo(37, 62);
+          face.lineTo(94, 62);
+          face.lineTo(98, 96);
+          face.lineTo(83, 112);
+          face.lineTo(48, 112);
+          face.lineTo(33, 96);
+        } else {
+          final left = direction == 5 || direction == 6;
+          // Mirrored three-quarter planes keep eyes, cheek and jaw intact.
+          double x(double value) => left ? 130 - value : value;
+          face.moveTo(x(54), 60);
+          face.lineTo(x(99), 60);
+          face.lineTo(x(103), 88);
+          face.lineTo(x(91), 109);
+          face.lineTo(x(68), 113);
+          face.lineTo(x(53), 96);
+        }
+        face.close();
+        canvas.clipPath(
+          Path.combine(
+            PathOperation.difference,
+            Path()..addRect(const Rect.fromLTWH(0, 0, 128, 256)),
+            face,
+          ),
+          doAntiAlias: false,
+        );
       }
-      layer(
-        'hair',
-        'hair',
-        look.hairModel,
-        Rect.fromLTWH(
-          17,
-          12,
-          96,
-          look.hairModel >= 4 && look.hairModel <= 6 ? 117 : 96,
-        ),
-        tint: overrides?[1] ?? color(1),
-        enabled: overrides != null || look.hair != 0,
-        reference: const Color(0xFF392B29),
-        alignment: Alignment.topCenter,
-      );
+      hairLayer();
       canvas.restore();
     }
     for (var i = 0; i < 8; i++) {
@@ -429,7 +502,13 @@ class _AvatarPainter extends CustomPainter {
       if (i == 6 && ![2, 3, 4].contains(direction)) continue;
       if (i < 3 && [2, 3, 4].contains(direction)) continue;
       final target = switch (i) {
-        0 || 1 || 2 => const Rect.fromLTWH(30, 77, 65, 26),
+        0 || 1 || 2 => switch (direction) {
+          7 => const Rect.fromLTWH(36, 58, 58, 23),
+          1 => const Rect.fromLTWH(72, 58, 32, 23),
+          5 => const Rect.fromLTWH(26, 58, 32, 23),
+          6 => const Rect.fromLTWH(28, 58, 49, 23),
+          _ => const Rect.fromLTWH(53, 58, 49, 23),
+        },
         3 || 4 => const Rect.fromLTWH(15, 14, 99, 62),
         5 => const Rect.fromLTWH(16, 25, 100, 87),
         6 => const Rect.fromLTWH(22, 128, 84, 76),

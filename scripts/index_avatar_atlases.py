@@ -7,8 +7,24 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1] / 'assets/avatar/catalog'
 
-def bbox(image, region):
+def bbox(image, region, single_item=False):
     alpha = image.getchannel('A').crop(region)
+    if single_item:
+        # A generated item can spill across a nominal cell boundary. Keep the
+        # main occupied column interval, excluding slivers of its neighbours.
+        weights = [sum(v > 245 for v in alpha.crop((x, 0, x + 1, alpha.height)).get_flattened_data()) for x in range(alpha.width)]
+        groups, start = [], None
+        for x, weight in enumerate(weights + [0]):
+            if weight and start is None:
+                start = x
+            elif not weight and start is not None:
+                groups.append((start, x))
+                start = None
+        if not groups:
+            return None
+        left, right = max(groups, key=lambda bounds: sum(weights[bounds[0]:bounds[1]]))
+        region = (region[0] + left, region[1], region[0] + right, region[3])
+        alpha = image.getchannel('A').crop(region)
     box = alpha.point(lambda a: 255 if a > 245 else 0).getbbox()
     if box is None:
         return None
@@ -42,11 +58,20 @@ for name in ['hair', 'tops', 'tops-wave', 'bottoms', 'footwear', 'extras']:
     assert len(intervals) == 8, (name, intervals)
     rows = []
     for interval in intervals:
-        rows.append([None if interval is None else bbox(image, (round(col * image.width / 8), max(0, interval[0] - 4), round((col + 1) * image.width / 8), min(image.height, interval[1] + 4))) for col in range(8)])
+        rows.append([None if interval is None else bbox(image, (round(col * image.width / 8), max(0, interval[0] - 4), round((col + 1) * image.width / 8), min(image.height, interval[1] + 4)), single_item=True) for col in range(8)])
     result[name] = rows
 image = Image.open(ROOT / 'body-v1.png')
 for part, top, bottom in [('head', 0, .51), ('hands', .51, .69), ('legs', .69, 1)]:
     result['body-' + part] = [[bbox(image, (round(col * image.width / 8), round((row + top) * image.height / 4), round((col + 1) * image.width / 8), round((row + bottom) * image.height / 4))) for col in range(8)] for row in range(4)]
 result['body-raised'] = [[bbox(image, (round((col + (.71 if col < 4 else 0)) * image.width / 8), round((row + .17) * image.height / 4), round((col + (1 if col < 4 else .29)) * image.width / 8), round((row + .48) * image.height / 4))) for col in range(8)] for row in [2, 3]]
+# Index hands independently: the empty space between them must not determine
+# their placement when a sleeve narrows in profile or one arm is raised.
+for side, left, right in [('left', .2, .45), ('right', .55, .8)]:
+    result['body-hand-' + side] = [[bbox(image, (
+        round((col + left) * image.width / 8),
+        round((row + .51) * image.height / 4),
+        round((col + right) * image.width / 8),
+        round((row + .69) * image.height / 4),
+    )) for col in range(8)] for row in range(2)]
 (ROOT / 'index-v1.json').write_text(json.dumps(result, indent=2) + '\n')
 print('Indexed', len(result), 'layers; PNG files unchanged.')
