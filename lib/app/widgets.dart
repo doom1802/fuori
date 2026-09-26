@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'fuori_theme.dart';
+import 'avatar_sprite.dart';
+import '../features/account/avatar_look.dart';
 
 class Eyebrow extends StatelessWidget {
   const Eyebrow(this.label, {super.key});
@@ -115,274 +117,67 @@ class EmptyMessage extends StatelessWidget {
   );
 }
 
-// Original vector placeholder until distributable avatar assets are selected.
-class AvatarPlaceholder extends StatelessWidget {
-  const AvatarPlaceholder({
+class AvatarPortrait extends StatelessWidget {
+  const AvatarPortrait({
     super.key,
     this.size = 48,
     this.coat = const Color(0xFF9B8DBF),
   });
-
   final double size;
   final Color coat;
-
   @override
-  Widget build(BuildContext context) => SizedBox(
+  Widget build(BuildContext context) => Container(
     width: size,
     height: size,
-    child: CustomPaint(painter: _AvatarPainter(coat)),
+    decoration: BoxDecoration(
+      color: context.lilac,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: AvatarSprite(coat: coat, headOnly: true),
   );
 }
 
-/// Full-body original illustration used in place of the reference sprites.
 class FullBodyAvatar extends StatelessWidget {
   const FullBodyAvatar({
     super.key,
+    this.body = AvatarBody.male,
+    this.hairStyle = AvatarHairStyle.spiky,
+    this.look,
     this.width = 82,
     this.height = 145,
     this.coat = const Color(0xFF9B8DBF),
     this.hair = const Color(0xFF392B29),
     this.skin = const Color(0xFFE2AD84),
     this.pants = const Color(0xFF434752),
-    this.shoes = const Color(0xFF272C32),
+    this.shoes = const Color(0xFFFAF5E7),
     this.glasses = false,
     this.wave = false,
+    this.direction = 0,
   });
-
-  final double width;
-  final double height;
-  final Color coat;
-  final Color hair;
-  final Color skin;
-  final Color pants;
-  final Color shoes;
-  final bool glasses;
-  final bool wave;
-
+  final AvatarBody body;
+  final AvatarHairStyle hairStyle;
+  final AvatarLook? look;
+  final double width, height;
+  final Color coat, hair, skin, pants, shoes;
+  final bool glasses, wave;
+  final int direction;
   @override
   Widget build(BuildContext context) => SizedBox(
     width: width,
     height: height,
-    child: CustomPaint(
-      painter: _FullBodyAvatarPainter(
-        coat: coat,
-        hair: hair,
-        skin: skin,
-        pants: pants,
-        shoes: shoes,
-        glasses: glasses,
-        wave: wave,
-      ),
+    child: AvatarSprite(
+      look: look,
+      body: body,
+      hairStyle: hairStyle,
+      coat: coat,
+      hair: hair,
+      skin: skin,
+      pants: pants,
+      shoes: shoes,
+      glasses: glasses,
+      wave: wave,
+      direction: direction,
     ),
   );
-}
-
-class _FullBodyAvatarPainter extends CustomPainter {
-  const _FullBodyAvatarPainter({
-    required this.coat,
-    required this.hair,
-    required this.skin,
-    required this.pants,
-    required this.shoes,
-    required this.glasses,
-    required this.wave,
-  });
-
-  final Color coat;
-  final Color hair;
-  final Color skin;
-  final Color pants;
-  final Color shoes;
-  final bool glasses;
-  final bool wave;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.save();
-    canvas.scale(size.width / 82, size.height / 145);
-    final outline = Paint()
-      ..color = const Color(0xFF312B2C)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
-    final skinPaint = Paint()..color = skin;
-    final coatPaint = Paint()..color = coat;
-    final hairPaint = Paint()..color = hair;
-    final trousers = Paint()..color = pants;
-    final shoePaint = Paint()..color = shoes;
-
-    // Legs and shoes sit behind the jacket.
-    for (final x in [23.0, 45.0]) {
-      final leg = RRect.fromRectAndRadius(
-        Rect.fromLTWH(x, 102, 15, 30),
-        const Radius.circular(3),
-      );
-      canvas.drawRRect(leg, trousers);
-      canvas.drawRRect(leg, outline);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(x - 3, 128, 22, 9),
-          const Radius.circular(4),
-        ),
-        shoePaint,
-      );
-    }
-
-    final leftArm = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(7, 65, 16, 48),
-      const Radius.circular(7),
-    );
-    final rightArm = RRect.fromRectAndRadius(
-      wave
-          ? const Rect.fromLTWH(61, 32, 16, 43)
-          : const Rect.fromLTWH(59, 65, 16, 48),
-      const Radius.circular(7),
-    );
-    canvas.drawRRect(leftArm, coatPaint);
-    canvas.drawRRect(rightArm, coatPaint);
-    canvas.drawRRect(leftArm, outline);
-    canvas.drawRRect(rightArm, outline);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(9, 108, 13, 13),
-        const Radius.circular(6),
-      ),
-      skinPaint,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        wave
-            ? const Rect.fromLTWH(62, 22, 13, 13)
-            : const Rect.fromLTWH(60, 108, 13, 13),
-        const Radius.circular(6),
-      ),
-      skinPaint,
-    );
-
-    final jacket = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(17, 59, 48, 51),
-      const Radius.circular(11),
-    );
-    canvas.drawRRect(jacket, coatPaint);
-    canvas.drawRRect(jacket, outline);
-    final seam = Paint()
-      ..color = const Color(0x55312B2C)
-      ..strokeWidth = 1.2;
-    canvas.drawLine(const Offset(41, 64), const Offset(41, 107), seam);
-    canvas.drawCircle(
-      const Offset(43, 83),
-      1.2,
-      Paint()..color = const Color(0xFF312B2C),
-    );
-
-    final neck = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(35, 52, 13, 14),
-      const Radius.circular(5),
-    );
-    canvas.drawRRect(neck, skinPaint);
-    final face = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(21, 19, 40, 42),
-      const Radius.circular(15),
-    );
-    canvas.drawRRect(face, skinPaint);
-    canvas.drawRRect(face, outline);
-    final hairCap = RRect.fromRectAndRadius(
-      const Rect.fromLTWH(19, 14, 44, 19),
-      const Radius.circular(10),
-    );
-    canvas.drawRRect(hairCap, hairPaint);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        const Rect.fromLTWH(19, 24, 9, 22),
-        const Radius.circular(4),
-      ),
-      hairPaint,
-    );
-    final eyePaint = Paint()..color = const Color(0xFF282429);
-    canvas.drawCircle(const Offset(36, 42), 1.8, eyePaint);
-    canvas.drawCircle(const Offset(50, 42), 1.8, eyePaint);
-    if (glasses) {
-      final frames = Paint()
-        ..color = const Color(0xFF312B2C)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.4;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          const Rect.fromLTWH(29, 35, 13, 13),
-          const Radius.circular(4),
-        ),
-        frames,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          const Rect.fromLTWH(44, 35, 13, 13),
-          const Radius.circular(4),
-        ),
-        frames,
-      );
-      canvas.drawLine(const Offset(42, 40), const Offset(44, 40), frames);
-    }
-    final mouth = Paint()
-      ..color = const Color(0xFF8A5545)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.1;
-    canvas.drawArc(const Rect.fromLTWH(38, 47, 9, 5), 0.1, 2.7, false, mouth);
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant _FullBodyAvatarPainter oldDelegate) =>
-      oldDelegate.coat != coat ||
-      oldDelegate.hair != hair ||
-      oldDelegate.skin != skin ||
-      oldDelegate.pants != pants ||
-      oldDelegate.shoes != shoes ||
-      oldDelegate.glasses != glasses ||
-      oldDelegate.wave != wave;
-}
-
-class _AvatarPainter extends CustomPainter {
-  _AvatarPainter(this.coat);
-
-  final Color coat;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final s = size.width / 48;
-    final background = Paint()..color = const Color(0xFFE8E3F5);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(14 * s)),
-      background,
-    );
-    final shirt = Paint()..color = coat;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(6 * s, 31 * s, 36 * s, 25 * s),
-        Radius.circular(13 * s),
-      ),
-      shirt,
-    );
-    final skin = Paint()..color = const Color(0xFFE2AD84);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(12 * s, 9 * s, 24 * s, 29 * s),
-        Radius.circular(10 * s),
-      ),
-      skin,
-    );
-    final hair = Paint()..color = const Color(0xFF392B29);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(11 * s, 7 * s, 26 * s, 10 * s),
-        Radius.circular(6 * s),
-      ),
-      hair,
-    );
-    final eye = Paint()..color = const Color(0xFF282429);
-    canvas.drawCircle(Offset(20 * s, 24 * s), 1.4 * s, eye);
-    canvas.drawCircle(Offset(29 * s, 24 * s), 1.4 * s, eye);
-  }
-
-  @override
-  bool shouldRepaint(covariant _AvatarPainter oldDelegate) =>
-      oldDelegate.coat != coat;
 }

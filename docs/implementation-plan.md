@@ -40,6 +40,8 @@ Questo piano ordina il lavoro, senza fissare date. Dopo la prima bozza Flutter, 
 
 ## M3 — grafica completa e asset finali
 
+**In corso:** C in sprite 2D con due basi, otto viste, colori, saluto e guardaroba componibile completo: otto modelli per vestiti, capelli, pantaloni, scarpe ed extra. Look collegato a Supabase con compatibilità delle preferenze precedenti. Restano la revisione artistica delle combinazioni e la rifinitura complessiva delle schermate.
+
 - Scegliere e produrre gli asset definitivi dell'avatar e degli altri elementi visivi, originali o con licenza di distribuzione adeguata. Documentare provenienza e diritti; non inserire sprite Habbo nell'app.
 - Sostituire i segnaposto della bozza Flutter, completare le varianti del personaggio e salvare la personalizzazione nel profilo creato in M2.
 - Rifinire tutte le schermate già presenti nel linguaggio visivo approvato, compresi stati di caricamento, errore e vuoto. Verificare accessibilità e layout a 320 e 420 px e su desktop.

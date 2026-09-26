@@ -331,7 +331,7 @@ class _InviteRequestScreenState extends State<InviteRequestScreen> {
         ),
         child: Column(
           children: [
-            const AvatarPlaceholder(size: 75),
+            const AvatarPortrait(size: 75),
             const SizedBox(height: 14),
             const Eyebrow('Ti ha invitato'),
             const SizedBox(height: 5),

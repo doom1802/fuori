@@ -1,9 +1,12 @@
+import 'package:fuori/app/avatar_sprite.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fuori/app/account_gate.dart';
 import 'package:fuori/features/account/account_repository.dart';
+import 'package:fuori/features/account/avatar_look.dart';
 
 class _FakeAuth implements AuthRepository {
   final _events = StreamController<AccountAuthEvent>.broadcast();
@@ -64,6 +67,9 @@ class _FakeProfiles implements ProfileRepository {
   AccountProfile? profile;
 
   @override
+  Future<AvatarLook> saveAvatar(String userId, AvatarLook look) async => look;
+
+  @override
   Future<AccountProfile?> getMine(String userId) async => profile;
 
   @override
@@ -72,6 +78,10 @@ class _FakeProfiles implements ProfileRepository {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    await AvatarSpriteAssets.preload();
+  });
   for (final width in [320.0, 420.0]) {
     testWidgets('la registrazione richiede la spunta 18+ a $width px', (
       tester,

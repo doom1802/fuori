@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/demo/demo_repositories.dart';
 import '../features/account/account_repository.dart';
+import '../features/account/avatar_look.dart';
 import '../features/events/event.dart';
 import '../features/events/event_repository.dart';
 import '../features/friends/friend.dart';
@@ -50,6 +51,8 @@ class FuoriApp extends StatelessWidget {
               dependencies: dependencies,
               profile: profile,
               onAccountSettings: openAccountSettings,
+              onSaveAvatar: (look) =>
+                  accountDependencies!.profiles.saveAvatar(profile.id, look),
             ),
           ),
   );
@@ -67,11 +70,13 @@ class _AppFrame extends StatefulWidget {
     required this.dependencies,
     this.profile,
     this.onAccountSettings,
+    this.onSaveAvatar,
   });
 
   final FuoriDependencies dependencies;
   final AccountProfile? profile;
   final VoidCallback? onAccountSettings;
+  final Future<AvatarLook> Function(AvatarLook)? onSaveAvatar;
 
   @override
   State<_AppFrame> createState() => _AppFrameState();
@@ -229,6 +234,10 @@ class _AppFrameState extends State<_AppFrame> {
                                               widget.profile?.displayName,
                                           onAccountSettings:
                                               widget.onAccountSettings,
+                                          initialLook:
+                                              widget.profile?.avatarLook ??
+                                              const AvatarLook(),
+                                          onSaveAvatar: widget.onSaveAvatar,
                                         ),
                                       ],
                                     ),

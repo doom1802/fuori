@@ -20,3 +20,7 @@ Superfici chiare e calde, accento corallo, area guardaroba lilla e adattamento a
 Il riferimento usa sprite Habbo caricati da un servizio esterno: sono un segnaposto visivo soggetto ai limiti indicati in [avatar.md](avatar.md). L'implementazione Flutter deve prevedere la sostituzione con asset distribuibili.
 
 Nella prima UI Flutter il guardaroba mostra le sei categorie, varianti di colore, occhiali e posa di saluto su un'illustrazione vettoriale originale. La bozza resta solo nella sessione dell'anteprima. La rotazione e le varianti di modello richiedono asset finali; i relativi comandi restano inattivi. La settimana raggruppa gli eventi per giorno.
+
+### Basi avatar approvate
+
+Nel profilo si sceglie fra base maschile e femminile; entrambe condividono le scelte del guardaroba. Nella categoria Capelli è disponibile H4, completamente pelata, al posto del caschetto della proposta. La scelta della base è una preferenza grafica dell’avatar.

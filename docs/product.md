@@ -4,7 +4,7 @@
 
 Fuori aiuta persone già collegate a incontrarsi: mostra eventi pubblici, eventi privati su invito e gli amici che hanno scelto di rendere visibile la propria partecipazione. La prima area è Torino e provincia. La prima app sarà Flutter web/PWA; iOS e Android potranno usare la stessa base in seguito.
 
-Il personaggio personalizzabile è parte centrale dell'identità visiva. La UI di riferimento è in `design/reference/`. La tecnologia e gli asset definitivi dell'avatar sono ancora da scegliere.
+Il personaggio personalizzabile è parte centrale dell'identità visiva. La UI di riferimento è in `design/reference/`. Il proprietario ha scelto sprite 2D originali nello stile della proposta C, con basi maschile e femminile e un guardaroba condiviso. La base è una preferenza grafica, non un dato sul sesso della persona.
 
 ## Percorsi principali
 
@@ -45,6 +45,6 @@ Lo schema prevederà una tabella `user_roles` con i ruoli `user` e `admin`, asse
 
 - Metodo di controllo dell'età adeguato al rilascio 18+ e gestione degli account che risultino appartenere a minori.
 - Visibilità delle risposte RSVP individuali negli eventi privati: l'elenco degli invitati è visibile, ma lo stato di risposta di ciascuno non è ancora deciso.
-- Asset originali o licenziati per l'avatar, resa 2D o 3D e pipeline su web/mobile.
+- Revisione artistica finale degli asset originali 2D e della resa del guardaroba su web/mobile.
 - Notifiche e moderazione degli eventi pubblici, inclusa la differenza tra nascondere, annullare ed eliminare un evento.
 - Elenco iniziale dei luoghi e comportamento degli eventi ricorrenti.

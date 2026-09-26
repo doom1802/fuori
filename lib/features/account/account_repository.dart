@@ -1,3 +1,5 @@
+import 'avatar_look.dart';
+
 enum AccountAuthEvent { sessionChanged, signedOut, passwordRecovery }
 
 abstract interface class AuthRepository {
@@ -19,15 +21,21 @@ abstract interface class AdultDeclarationRepository {
 }
 
 class AccountProfile {
-  const AccountProfile({required this.id, required this.displayName});
+  const AccountProfile({
+    required this.id,
+    required this.displayName,
+    this.avatarLook = const AvatarLook(),
+  });
 
   final String id;
   final String displayName;
+  final AvatarLook avatarLook;
 }
 
 abstract interface class ProfileRepository {
   Future<AccountProfile?> getMine(String userId);
   Future<AccountProfile> saveName(String userId, String displayName);
+  Future<AvatarLook> saveAvatar(String userId, AvatarLook look);
 }
 
 class AccountDependencies {

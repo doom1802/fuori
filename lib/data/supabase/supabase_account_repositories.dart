@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/account/account_repository.dart';
+import '../../features/account/avatar_look.dart';
 
 class SupabaseAuthRepository implements AuthRepository {
   SupabaseAuthRepository(this._client);
@@ -97,13 +98,14 @@ class SupabaseProfileRepository implements ProfileRepository {
   Future<AccountProfile?> getMine(String userId) async {
     final row = await _client
         .from('profiles')
-        .select('id, display_name')
+        .select('id, display_name, avatar_preferences')
         .eq('id', userId)
         .maybeSingle();
     if (row == null) return null;
     return AccountProfile(
       id: row['id'] as String,
       displayName: row['display_name'] as String,
+      avatarLook: AvatarLook.fromJson(row['avatar_preferences']),
     );
   }
 
@@ -125,6 +127,21 @@ class SupabaseProfileRepository implements ProfileRepository {
           .update({'display_name': name})
           .eq('id', userId);
     }
-    return AccountProfile(id: userId, displayName: name);
+    return AccountProfile(
+      id: userId,
+      displayName: name,
+      avatarLook: existing?.avatarLook ?? const AvatarLook(),
+    );
+  }
+
+  @override
+  Future<AvatarLook> saveAvatar(String userId, AvatarLook look) async {
+    final row = await _client
+        .from('profiles')
+        .update({'avatar_preferences': look.toJson()})
+        .eq('id', userId)
+        .select('avatar_preferences')
+        .single();
+    return AvatarLook.fromJson(row['avatar_preferences']);
   }
 }
