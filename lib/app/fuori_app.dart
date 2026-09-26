@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../data/demo/demo_repositories.dart';
+import '../features/account/account_repository.dart';
 import '../features/events/event.dart';
 import '../features/events/event_repository.dart';
 import '../features/friends/friend.dart';
 import '../features/friends/friend_repository.dart';
 import '../features/friends/demo_invite_link.dart';
 import 'fuori_theme.dart';
+import 'account_gate.dart';
 import 'create_event_screen.dart';
 import 'invite_screens.dart';
 import 'screens.dart';
@@ -24,9 +26,14 @@ class FuoriDependencies {
 }
 
 class FuoriApp extends StatelessWidget {
-  const FuoriApp({super.key, required this.dependencies});
+  const FuoriApp({
+    super.key,
+    required this.dependencies,
+    this.accountDependencies,
+  });
 
   final FuoriDependencies dependencies;
+  final AccountDependencies? accountDependencies;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -35,7 +42,16 @@ class FuoriApp extends StatelessWidget {
     theme: FuoriTheme.light(),
     darkTheme: FuoriTheme.dark(),
     themeMode: ThemeMode.system,
-    home: _AppFrame(dependencies: dependencies),
+    home: accountDependencies == null
+        ? _AppFrame(dependencies: dependencies)
+        : AccountGate(
+            dependencies: accountDependencies!,
+            homeBuilder: (profile, openAccountSettings) => _AppFrame(
+              dependencies: dependencies,
+              profile: profile,
+              onAccountSettings: openAccountSettings,
+            ),
+          ),
   );
 }
 
@@ -47,9 +63,15 @@ class _PreviewData {
 }
 
 class _AppFrame extends StatefulWidget {
-  const _AppFrame({required this.dependencies});
+  const _AppFrame({
+    required this.dependencies,
+    this.profile,
+    this.onAccountSettings,
+  });
 
   final FuoriDependencies dependencies;
+  final AccountProfile? profile;
+  final VoidCallback? onAccountSettings;
 
   @override
   State<_AppFrame> createState() => _AppFrameState();
@@ -202,7 +224,12 @@ class _AppFrameState extends State<_AppFrame> {
                                           friends: data.friends,
                                           onInvite: _openInvite,
                                         ),
-                                        const ProfileScreen(),
+                                        ProfileScreen(
+                                          displayName:
+                                              widget.profile?.displayName,
+                                          onAccountSettings:
+                                              widget.onAccountSettings,
+                                        ),
                                       ],
                                     ),
                                     if (_selectedEvent != null)

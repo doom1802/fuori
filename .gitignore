@@ -3,6 +3,10 @@
 .env
 .env.*
 !.env.example
+/config/supabase.local.json
+/supabase/.branches/
+/supabase/.profiles/
+/supabase/.temp/
 node_modules/
 dist/
 build/

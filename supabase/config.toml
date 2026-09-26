@@ -1,0 +1,33 @@
+project_id = "fuori"
+
+[api]
+port = 55421
+
+[db]
+port = 55422
+shadow_port = 55420
+major_version = 17
+
+[db.pooler]
+port = 55429
+
+[studio]
+port = 55423
+
+[local_smtp]
+port = 55424
+
+[analytics]
+port = 55427
+
+[edge_runtime]
+inspector_port = 55428
+
+[auth]
+site_url = "http://127.0.0.1:4174"
+additional_redirect_urls = ["http://127.0.0.1:4174", "http://localhost:4174"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true

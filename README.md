@@ -2,7 +2,7 @@
 
 Fuori è un'app in sviluppo per organizzare eventi pubblici e privati su invito e incontrare amici già collegati. La prima destinazione è web/PWA con Flutter; iOS e Android sono previsti in seguito.
 
-La prima bozza Flutter traduce il linguaggio visivo del riferimento navigabile. Le quattro sezioni usano dati dimostrativi separati dai widget tramite interfacce di repository. Il QR personale, la scansione, le richieste di amicizia, la creazione eventi e le risposte sono percorsi di anteprima: non creano account, amicizie o eventi reali. Non sono ancora attivi autenticazione, database e regole di accesso: saranno implementati con Supabase nelle milestone successive. Il link QR locale funziona soltanto sulla stessa origine dell'anteprima; per invitare altre persone servirà un dominio e un backend.
+La prima bozza Flutter traduce il linguaggio visivo del riferimento navigabile. Le quattro sezioni usano dati dimostrativi separati dai widget tramite interfacce di repository. Il QR personale, la scansione, le richieste di amicizia, la creazione eventi e le risposte sono percorsi di anteprima: non creano amicizie o eventi reali. M2 aggiunge il codice per account, profilo e regole di accesso con Supabase; questi percorsi richiedono un progetto Supabase configurato e la migrazione applicata. Il link QR locale funziona soltanto sulla stessa origine dell'anteprima; per invitare altre persone servirà un dominio e un backend.
 
 ## Avviare l'app Flutter
 
@@ -23,11 +23,23 @@ flutter build web
 
 La UI è progettata per 320–420 px e viene centrata in una colonna larga al massimo 420 px su desktop. Il personaggio attuale è un segnaposto vettoriale originale; gli sprite Habbo del riferimento non sono inclusi nell'app. Le icone PWA originali si rigenerano su macOS con `swift scripts/make-web-icons.swift`.
 
+## Account e database (M2)
+
+L'avvio senza configurazione continua a mostrare l'anteprima dimostrativa. Per usare un progetto Supabase, copia `config/supabase.example.json` in `config/supabase.local.json`, inserisci l'URL del progetto e la sua chiave **publishable**, poi avvia:
+
+```sh
+flutter run -d chrome --web-port=4174 --dart-define-from-file=config/supabase.local.json
+```
+
+Il file locale è ignorato da Git. La migrazione in `supabase/migrations/` va applicata al progetto prima di accedere; email da confermare, URL di ritorno e provider Google richiedono configurazione nella dashboard. La chiave `service_role` e il client secret Google non devono comparire nell'app o nel repository. Il flusso account, le regole di accesso e le verifiche con due utenti sono descritti in [Account e accesso ai dati](docs/account-access.md). Eventi, QR e amicizie restano dimostrativi durante M2.
+
 ## Dove iniziare
 
 - [Prodotto](docs/product.md): funzioni, privacy, primo rilascio e decisioni aperte.
 - [Direzione grafica](docs/design.md): struttura e stile dell'interfaccia da portare in Flutter.
 - [Corrispondenza mockup–Flutter](docs/mockup-parity.md): percorsi già navigabili e funzioni ancora da collegare al backend.
+- [Account e accesso ai dati](docs/account-access.md): configurazione M2, ruoli e matrice di accesso.
+- [Migrazioni Supabase](docs/database-migrations.md): CLI, secrets GitHub e deploy automatico dello schema dopo il merge su `main`.
 - [Avatar](docs/avatar.md): dipendenza temporanea dagli sprite Habbo e requisiti per gli asset di produzione.
 - [Piano di implementazione](docs/implementation-plan.md): milestone, criteri di completamento e ordine del lavoro.
 - [Riferimento grafico](design/reference/index.html): versione HTML navigabile della UI corrente.
