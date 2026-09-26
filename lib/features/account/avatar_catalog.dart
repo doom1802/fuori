@@ -51,7 +51,7 @@ abstract final class AvatarCatalog {
     'E8 · Tracolla',
   ];
   static const categories = [tops, hair, bottoms, shoes, extras];
-  static const accessoryGroups = [0x07, 0x38, 0xC0];
+  static const accessoryGroups = [0x07, 0x18, 0x20, 0x40, 0x80];
   static int normalizeAccessories(int value) {
     var result = 0;
     for (final group in accessoryGroups) {

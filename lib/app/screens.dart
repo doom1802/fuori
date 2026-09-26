@@ -1017,7 +1017,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 12),
           if (_category == 4)
             Text(
-              'Abbina un accessorio per viso, testa e borsa.',
+              'Abbina occhiali, cappello, cuffie e borse.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           const SizedBox(height: 8),

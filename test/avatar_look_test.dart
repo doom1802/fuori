@@ -1,3 +1,4 @@
+import 'package:fuori/app/widgets.dart';
 import 'package:fuori/features/account/avatar_catalog.dart';
 import 'package:fuori/app/avatar_sprite.dart';
 import 'package:flutter/material.dart';
@@ -72,6 +73,8 @@ void main() {
       mask = AvatarCatalog.toggleAccessory(mask, 1);
       expect(mask, 2 | 8 | 64);
       expect(AvatarCatalog.toggleAccessory(mask, 1), 8 | 64);
+      expect(AvatarCatalog.toggleAccessory(mask, 5), 2 | 8 | 32 | 64);
+      expect(AvatarCatalog.toggleAccessory(mask, 7), 2 | 8 | 64 | 128);
       expect(
         AvatarLook.fromJson({
           'version': 2,
@@ -108,6 +111,40 @@ void main() {
       }
     }
   });
+
+  testWidgets(
+    'saluto e tutti gli extra compatibili si compongono sulle otto viste',
+    (tester) async {
+      for (final body in AvatarBody.values) {
+        for (var direction = 0; direction < 8; direction++) {
+          await tester.pumpWidget(
+            MaterialApp(
+              home: Scaffold(
+                body: Center(
+                  child: FullBodyAvatar(
+                    look: AvatarLook(
+                      body: body,
+                      topModel: 7,
+                      hairModel: 4,
+                      bottomModel: 7,
+                      shoeModel: 7,
+                      accessoryMask: 1 | 8 | 32 | 64 | 128,
+                    ),
+                    direction: direction,
+                    wave: true,
+                    width: 126,
+                    height: 222,
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pump();
+          expect(tester.takeException(), isNull);
+        }
+      }
+    },
+  );
 
   testWidgets(
     'un salvataggio fallito conserva la bozza e permette di riprovare',

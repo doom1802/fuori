@@ -12,7 +12,7 @@ Asset originali prodotti per Fuori il 26 settembre 2026 con OpenAI ImageGen inte
 | Scarpe | S1 sneakers, S2 sneakers alte, S3 skate, S4 running, S5 anfibi, S6 Chelsea boots, S7 mocassini, S8 sandali |
 | Extra | E1 occhiali rettangolari, E2 tondi, E3 da sole, E4 cappellino, E5 berretto, E6 cuffie, E7 zainetto, E8 tracolla |
 
-Entrambe le basi condividono il catalogo. Gli extra occupano tre gruppi: viso (E1–E3), testa (E4–E6), borsa (E7–E8). Si può scegliere un elemento per gruppo e combinarli; premere un elemento selezionato lo rimuove.
+Entrambe le basi condividono il catalogo. Si può scegliere un modello di occhiali (E1–E3), un cappello (E4–E5), e aggiungere indipendentemente cuffie (E6), zainetto (E7) e tracolla (E8); premere un elemento selezionato lo rimuove.
 
 ## Prompt e file
 
