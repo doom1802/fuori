@@ -1,9 +1,14 @@
+import 'package:fuori/app/avatar_sprite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fuori/app/fuori_app.dart';
 import 'package:fuori/features/friends/demo_invite_link.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    await AvatarSpriteAssets.preload();
+  });
   test('il link invito demo accetta solo origine e percorso locali', () {
     final app = Uri.parse('https://example.test/app/');
     final link = DemoInviteLink.create(app, 'Vale');
@@ -97,12 +102,16 @@ void main() {
         )
         .first;
     await tester.scrollUntilVisible(
-      find.text('Ci sarò'), 180, scrollable: attendingScroll,
+      find.text('Ci sarò'),
+      180,
+      scrollable: attendingScroll,
     );
     await tester.tap(find.text('Ci sarò'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(
-      find.byTooltip('Torna indietro'), -350, scrollable: attendingScroll,
+      find.byTooltip('Torna indietro'),
+      -350,
+      scrollable: attendingScroll,
     );
     await tester.tap(find.byTooltip('Torna indietro'));
     await tester.pumpAndSettle();
@@ -257,6 +266,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('nav-3')));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('wardrobe-category-1')),
+      120,
+      scrollable: find
+          .descendant(
+            of: find.byKey(const Key('profile-page')),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
     await tester.tap(find.byKey(const Key('wardrobe-category-1')));
     await tester.pumpAndSettle();
     final profileScroll = find
@@ -276,6 +295,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('nav-3')));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('wardrobe-category-1')),
+      -150,
+      scrollable: profileScroll,
+    );
     expect(find.byKey(const Key('wardrobe-category-1')), findsOneWidget);
     await tester.scrollUntilVisible(
       find.byKey(const Key('wardrobe-choice-1')),

@@ -1,3 +1,7 @@
+import 'avatar_palette.dart';
+import '../features/account/avatar_catalog.dart';
+import '../features/account/avatar_look.dart';
+
 import 'package:flutter/material.dart';
 
 import '../features/events/event.dart';
@@ -643,7 +647,7 @@ class FriendsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              AvatarPlaceholder(
+              AvatarPortrait(
                 size: 48,
                 coat: const [
                   Color(0xFF9B8DBF),
@@ -676,10 +680,18 @@ class FriendsScreen extends StatelessWidget {
 }
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key, this.displayName, this.onAccountSettings});
+  const ProfileScreen({
+    super.key,
+    this.displayName,
+    this.onAccountSettings,
+    this.initialLook = const AvatarLook(),
+    this.onSaveAvatar,
+  });
 
   final String? displayName;
   final VoidCallback? onAccountSettings;
+  final AvatarLook initialLook;
+  final Future<AvatarLook> Function(AvatarLook)? onSaveAvatar;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -694,43 +706,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
     'Extra',
     'Pelle',
   ];
-  static const _palettes = <List<Color>>[
-    [
-      Color(0xFF9B8DBF),
-      Color(0xFFDA8264),
-      Color(0xFF668FA7),
-      Color(0xFF566B54),
-    ],
-    [
-      Color(0xFF392B29),
-      Color(0xFF8C474A),
-      Color(0xFFB47C4E),
-      Color(0xFF242326),
-    ],
-    [
-      Color(0xFF434752),
-      Color(0xFF667796),
-      Color(0xFF917C70),
-      Color(0xFF2D3035),
-    ],
-    [
-      Color(0xFF272C32),
-      Color(0xFFFAF5E7),
-      Color(0xFF905F4C),
-      Color(0xFF616B8C),
-    ],
-    [Color(0xFF312B2C), Color(0xFF312B2C)],
-    [
-      Color(0xFFE2AD84),
-      Color(0xFFF3CCA8),
-      Color(0xFFC5875D),
-      Color(0xFF8D5C43),
-    ],
-  ];
-  final List<int> _choices = List.filled(6, 0);
+  static const _palettes = AvatarPalette.colors;
+  late List<int> _choices = widget.initialLook.choices;
+  late AvatarBody _body = widget.initialLook.body;
+  late List<int> _models = widget.initialLook.models;
+  late int _accessoryMask = widget.initialLook.accessoryMask;
   int _category = 0;
   bool _wave = false;
+  int _direction = 0;
   bool _saved = false;
+  bool _saving = false;
+  String? _saveError;
+
+  Future<void> _saveLook() async {
+    if (_saving) return;
+    final look = AvatarLook.fromChoices(
+      _choices,
+      body: _body,
+      models: _models,
+      accessoryMask: _accessoryMask,
+    );
+    setState(() {
+      _saving = true;
+      _saveError = null;
+    });
+    try {
+      final saved = await widget.onSaveAvatar?.call(look) ?? look;
+      if (!mounted) return;
+      setState(() {
+        _choices = saved.choices;
+        _body = saved.body;
+        _models = saved.models;
+        _accessoryMask = saved.accessoryMask;
+        _saved = true;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _saveError =
+              'Non siamo riusciti a salvare il look. La bozza è qui: riprova.';
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -815,6 +835,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Positioned(
                 bottom: 14,
                 child: FullBodyAvatar(
+                  body: _body,
+                  look: AvatarLook.fromChoices(
+                    _choices,
+                    body: _body,
+                    models: _models,
+                    accessoryMask: _accessoryMask,
+                  ),
                   width: 126,
                   height: 222,
                   coat: _palettes[0][_choices[0]],
@@ -824,6 +851,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   glasses: _choices[4] == 1,
                   skin: _palettes[5][_choices[5]],
                   wave: _wave,
+                  direction: _direction,
                 ),
               ),
             ],
@@ -834,30 +862,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
           alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            const IconButton(
-              onPressed: null,
-              tooltip: 'Rotazione disponibile con gli asset finali',
-              icon: Icon(Icons.rotate_left_rounded),
+            IconButton(
+              key: const Key('avatar-rotate-left'),
+              onPressed: () =>
+                  setState(() => _direction = (_direction + 7) % 8),
+              tooltip: 'Ruota a sinistra',
+              icon: const Icon(Icons.rotate_left_rounded),
             ),
             Text(
-              'Vista frontale',
+              'Vista ${_direction + 1} di 8',
               style: Theme.of(context).textTheme.bodySmall,
             ),
-            const IconButton(
-              onPressed: null,
-              tooltip: 'Rotazione disponibile con gli asset finali',
-              icon: Icon(Icons.rotate_right_rounded),
+            IconButton(
+              key: const Key('avatar-rotate-right'),
+              onPressed: () =>
+                  setState(() => _direction = (_direction + 1) % 8),
+              tooltip: 'Ruota a destra',
+              icon: const Icon(Icons.rotate_right_rounded),
             ),
             TextButton(
               onPressed: () => setState(() {
                 _wave = !_wave;
-                _saved = false;
               }),
               child: Text(_wave ? 'Ferma' : 'Saluta'),
             ),
           ],
         ),
-        const SizedBox(height: 3),
+        const SizedBox(height: 8),
+        Text('Base avatar', style: Theme.of(context).textTheme.titleSmall),
+        const SizedBox(height: 8),
+        SegmentedButton<AvatarBody>(
+          segments: const [
+            ButtonSegment(value: AvatarBody.male, label: Text('Maschile')),
+            ButtonSegment(value: AvatarBody.female, label: Text('Femminile')),
+          ],
+          selected: {_body},
+          onSelectionChanged: _saving
+              ? null
+              : (value) => setState(() {
+                  _body = value.single;
+                  _saved = false;
+                  _saveError = null;
+                }),
+        ),
+        const SizedBox(height: 12),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -896,66 +944,178 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         const SizedBox(height: 15),
-        Row(
-          children: [
-            for (var i = 0; i < _palettes[_category].length; i++)
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    right: i == _palettes[_category].length - 1 ? 0 : 8,
-                  ),
-                  child: Semantics(
-                    selected: _choices[_category] == i,
-                    label: '${_labels[_category]} ${i + 1}',
-                    button: true,
-                    child: InkWell(
-                      key: Key('wardrobe-choice-$i'),
-                      onTap: () => setState(() {
-                        _choices[_category] = i;
-                        _saved = false;
-                      }),
-                      borderRadius: BorderRadius.circular(16),
-                      child: Container(
-                        height: 75,
-                        decoration: BoxDecoration(
-                          color: context.surface,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: _choices[_category] == i
-                                ? Theme.of(context).colorScheme.onSurface
-                                : context.line,
-                            width: _choices[_category] == i ? 2 : 1,
+        if (_category != 4 && (_category != 1 || _models[1] != 3))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              _category == 5
+                  ? 'Tonalità della pelle'
+                  : 'Colore · prima scelta: originale',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        if (_category != 4 && (_category != 1 || _models[1] != 3))
+          Row(
+            children: [
+              for (var i = 0; i < _palettes[_category].length; i++)
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: i == _palettes[_category].length - 1 ? 0 : 8,
+                    ),
+                    child: Semantics(
+                      selected: _choices[_category] == i,
+                      label: i == 0 && _category != 5
+                          ? 'Colore originale'
+                          : '${_labels[_category]} colore ${i + 1}',
+                      button: true,
+                      child: InkWell(
+                        key: Key('wardrobe-choice-$i'),
+                        onTap: _saving
+                            ? null
+                            : () => setState(() {
+                                _choices[_category] = i;
+                                _saved = false;
+                                _saveError = null;
+                              }),
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          height: 75,
+                          decoration: BoxDecoration(
+                            color: context.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: _choices[_category] == i
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : context.line,
+                              width: _choices[_category] == i ? 2 : 1,
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: _category == 4
-                              ? Icon(
-                                  i == 0
-                                      ? Icons.close_rounded
-                                      : Icons.remove_red_eye_outlined,
-                                  size: 25,
-                                )
-                              : CircleAvatar(
-                                  backgroundColor: _palettes[_category][i],
-                                  radius: 15,
-                                ),
+                          child: Center(
+                            child: _category == 4
+                                ? Icon(
+                                    i == 0
+                                        ? Icons.close_rounded
+                                        : Icons.remove_red_eye_outlined,
+                                    size: 25,
+                                  )
+                                : i == 0 && _category != 5
+                                ? const Icon(Icons.palette_outlined)
+                                : CircleAvatar(
+                                    backgroundColor: _palettes[_category][i],
+                                    radius: 15,
+                                  ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
+            ],
+          ),
+        if (_category < 5) ...[
+          const SizedBox(height: 12),
+          if (_category == 4)
+            Text(
+              'Abbina un accessorio per viso, testa e borsa.',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          const SizedBox(height: 8),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 1.2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: 8,
+            itemBuilder: (context, index) {
+              final selected = _category == 4
+                  ? (_accessoryMask & (1 << index)) != 0
+                  : _models[_category] == index;
+              final previewModels = List<int>.of(_models);
+              if (_category < 4) previewModels[_category] = index;
+              final preview = AvatarLook.fromChoices(
+                _choices,
+                body: _body,
+                models: previewModels,
+                accessoryMask: _category == 4 ? (1 << index) : _accessoryMask,
+              );
+              return Semantics(
+                selected: selected,
+                button: true,
+                child: InkWell(
+                  key: Key('wardrobe-model-$_category-$index'),
+                  onTap: _saving
+                      ? null
+                      : () => setState(() {
+                          if (_category == 4) {
+                            _accessoryMask = AvatarCatalog.toggleAccessory(
+                              _accessoryMask,
+                              index,
+                            );
+                          } else {
+                            _models[_category] = index;
+                          }
+                          _saved = false;
+                          _saveError = null;
+                        }),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: context.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: selected
+                            ? Theme.of(context).colorScheme.onSurface
+                            : context.line,
+                        width: selected ? 2 : 1,
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(6),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: FullBodyAvatar(
+                            width: 48,
+                            height: 72,
+                            look: preview,
+                          ),
+                        ),
+                        Text(
+                          AvatarCatalog.categories[_category][index],
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: const TextStyle(fontSize: 10, height: 1.1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
         const SizedBox(height: 16),
         FuoriButton(
-          label: _saved ? 'Look salvato in anteprima' : 'Questo sono io',
+          label: _saving
+              ? 'Salvataggio…'
+              : _saved
+              ? widget.onSaveAvatar == null
+                    ? 'Look salvato in anteprima'
+                    : 'Look salvato'
+              : 'Questo sono io',
           icon: Icons.check_rounded,
-          onPressed: () => setState(() => _saved = true),
+          onPressed: _saving ? null : _saveLook,
         ),
         const SizedBox(height: 9),
         Text(
-          'Il look resta in questa sessione di anteprima.',
+          _saveError ??
+              (widget.onSaveAvatar == null
+                  ? 'Il look resta in questa sessione di anteprima.'
+                  : 'Conferma il look per salvarlo nel tuo profilo.'),
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
@@ -1050,7 +1210,7 @@ class EventDetailScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              const AvatarPlaceholder(size: 43),
+              const AvatarPortrait(size: 43),
               const SizedBox(width: 11),
               Text(name, style: Theme.of(context).textTheme.titleMedium),
             ],

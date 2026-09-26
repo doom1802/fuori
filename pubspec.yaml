@@ -21,6 +21,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/avatar/
+    - assets/avatar/catalog/
+  shaders:
+    - assets/shaders/avatar_layer.frag
   fonts:
     - family: Manrope
       fonts:
