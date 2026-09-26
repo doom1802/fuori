@@ -39,6 +39,7 @@ Il file locale è ignorato da Git. La migrazione in `supabase/migrations/` va ap
 - [Direzione grafica](docs/design.md): struttura e stile dell'interfaccia da portare in Flutter.
 - [Corrispondenza mockup–Flutter](docs/mockup-parity.md): percorsi già navigabili e funzioni ancora da collegare al backend.
 - [Account e accesso ai dati](docs/account-access.md): configurazione M2, ruoli e matrice di accesso.
+- [Migrazioni Supabase](docs/database-migrations.md): CLI, secrets GitHub e deploy automatico dello schema dopo il merge su `main`.
 - [Avatar](docs/avatar.md): dipendenza temporanea dagli sprite Habbo e requisiti per gli asset di produzione.
 - [Piano di implementazione](docs/implementation-plan.md): milestone, criteri di completamento e ordine del lavoro.
 - [Riferimento grafico](design/reference/index.html): versione HTML navigabile della UI corrente.

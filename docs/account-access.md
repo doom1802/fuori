@@ -24,7 +24,7 @@ Il ruolo `user` viene assegnato dal trigger sul server alla creazione dell'accou
 ## Configurazione e verifica
 
 1. Creare un progetto Supabase, attivare **Confirm email** e impostare Site URL e redirect URL per l'origine web usata da Flutter. Per lo sviluppo locale usare una porta fissa, per esempio `http://127.0.0.1:4174`.
-2. Applicare la migrazione al progetto tramite Supabase CLI (`supabase link --project-ref ...`, poi `supabase db push`). Prima di usare un progetto già popolato, confrontare lo schema remoto con le migrazioni locali.
+2. Applicare la migrazione con la CLI o il deploy GitHub Actions descritti in [Migrazioni Supabase](database-migrations.md). Prima di usare un progetto già popolato, confrontare lo schema remoto con le migrazioni locali. Evitare l'esecuzione manuale nel SQL Editor per mantenere la cronologia coerente.
 3. Configurare il provider Google in Supabase e nella console Google usando il callback URL mostrato da Supabase. Client secret e credenziali OAuth restano nel provider, mai nel repository.
 4. Copiare `config/supabase.example.json` in `config/supabase.local.json`, inserendo URL e chiave **publishable** del progetto. Il file locale è ignorato da Git.
 5. Avviare con `flutter run -d chrome --web-port=4174 --dart-define-from-file=config/supabase.local.json`. Senza configurazione, l'app apre soltanto l'anteprima dimostrativa.
