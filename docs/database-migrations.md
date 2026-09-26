@@ -32,6 +32,26 @@ npx --yes supabase@2.118.0 db push
 
 La CLI richiede la password del database quando necessaria. Verificare il progetto collegato e le migrazioni pendenti prima di confermare il primo deploy. `db reset --local` è riservato al database locale di sviluppo.
 
+### Supabase sul computer
+
+Avviare Docker Desktop, poi dalla radice del repository:
+
+```sh
+npx --yes supabase@2.118.0 start
+npx --yes supabase@2.118.0 migration up --local
+npx --yes supabase@2.118.0 status
+```
+
+Il primo avvio scarica le immagini. `migration up --local` applica le migrazioni pendenti anche se lo stack riparte da un volume già esistente. Fuori usa porte dedicate: API `55421`, PostgreSQL `55422`, Studio `55423` e posta di test `55424`. La posta locale resta nel servizio di test e non viene inviata ai destinatari. Il progetto remoto e quello locale sono database separati.
+
+Per collegare Flutter allo stack locale, usare l'URL API e la chiave pubblica mostrati da `status` in un file di configurazione locale, poi avviare Flutter con `--dart-define-from-file`. Conservare separatamente la configurazione del progetto remoto. Non usare la chiave amministrativa nel client.
+
+Su macOS, se la CLI non trova `docker-credential-desktop`, aggiungere il percorso fornito da Docker al comando:
+
+```sh
+PATH=/Applications/Docker.app/Contents/Resources/bin:$PATH npx --yes supabase@2.118.0 start
+```
+
 Per creare un cambiamento:
 
 ```sh

@@ -30,3 +30,18 @@ Il ruolo `user` viene assegnato dal trigger sul server alla creazione dell'accou
 5. Avviare con `flutter run -d chrome --web-port=4174 --dart-define-from-file=config/supabase.local.json`. Senza configurazione, l'app apre soltanto l'anteprima dimostrativa.
 
 Per chiudere M2 servono due account reali: verificare registrazione email, Google, recupero password, logout, persistenza del profilo e sessione. Ripetere le richieste direttamente all'API con sessione propria, dell'altro account e senza sessione: il profilo altrui e `user_roles` devono restare inaccessibili, anche se si tenta un aggiornamento diretto. Verificare inoltre che un account senza dichiarazione non legga il proprio profilo e che non possa assegnarsi `admin`.
+
+## Verifica locale del 26 settembre 2026
+
+La CLI ha applicato la migrazione allo stack Docker `fuori`. Le prove con due account fittizi e richieste alle API locali hanno verificato:
+
+- Creazione del profilo impedita prima della dichiarazione 18+.
+- Lettura del solo profilo proprio; modifica del profilo altrui senza effetto.
+- Accesso anonimo ai profili e accesso client a `user_roles` impediti, inclusa l'assegnazione di `admin`.
+- Dichiarazione 18+ non modificabile dal client.
+- Modifica del nome persistente dopo un nuovo accesso.
+- Registrazione email con accesso impedito prima della conferma, usando la posta locale.
+- Recupero password con invalidazione della password precedente.
+- Rinnovo della sessione e revoca del refresh token dopo il logout.
+
+Il controllo SQL non ha rilevato errori e Flutter web è stato compilato con la configurazione locale. Queste prove verificano le API, non l'interazione nel browser. Google OAuth e i percorsi web completi restano da verificare; il database remoto non è stato modificato.
